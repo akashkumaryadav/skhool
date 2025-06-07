@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import CartoonEyes from '../components/CartoonEyes';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -10,12 +11,42 @@ export default function Register() {
     confirmPassword: '',
   });
 
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const isFormValid = formData.username !== '' && formData.email !== '' && formData.password !== '' && formData.confirmPassword !== '' && formData.password === formData.confirmPassword;
+
+  let expression: 'default' | 'disagreement' | 'agreement' | 'waiting' = 'default';
+
+  if (focusedField && !isTyping) {
+    expression = 'waiting';
+  } else if (!focusedField && !isTyping) {
+    expression = isFormValid ? 'agreement' : 'default';
+  } else if (focusedField && isTyping) {
+    // Optionally add typing feedback or keep current expression
+    expression = 'waiting'; // Or another expression for typing
+  } else if (!isFormValid && !focusedField) {
+      expression = 'disagreement';
+  }
+
+  useEffect(() => {
+      let typingTimer: NodeJS.Timeout;
+      if (focusedField) {
+          setIsTyping(true);
+          typingTimer = setTimeout(() => setIsTyping(false), 500); // Adjust delay as needed
+      } else {
+          setIsTyping(false);
+      }
+      return () => clearTimeout(typingTimer);
+  }, [formData, focusedField]); // Depend on formData and focusedField
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+    setIsTyping(true); // Indicate typing on change
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -28,11 +59,23 @@ export default function Register() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-100 to-blue-200">
       <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-lg shadow-xl transform transition-transform duration-500 hover:scale-105">
+
+        {/* Cartoon Eyes Component */}
+        <div className="flex justify-center">
+           <CartoonEyes expression={expression} />
+        </div>
+
         <div className="text-center">
           <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
             Create your account
           </h2>
         </div>
+        {/* Optional: Display form validity for debugging */}
+        {/* <div className="text-center text-sm text-gray-600">
+            Form Valid: {isFormValid ? 'Yes' : 'No'} | Focused: {focusedField || 'None'} | Typing: {isTyping ? 'Yes' : 'No'} | Expression: {expression}
+        </div> */}
+
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="-space-y-px rounded-md shadow-sm">
             <div>
@@ -49,6 +92,8 @@ export default function Register() {
                 placeholder="Username"
                 value={formData.username}
                 onChange={handleChange}
+                onFocus={() => setFocusedField('username')}
+                onBlur={() => setFocusedField(null)}
               />
             </div>
             <div>
@@ -65,6 +110,8 @@ export default function Register() {
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
               />
             </div>
             <div>
@@ -81,6 +128,8 @@ export default function Register() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
               />
             </div>
             <div>
@@ -97,6 +146,8 @@ export default function Register() {
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                onFocus={() => setFocusedField('confirmPassword')}
+                onBlur={() => setFocusedField(null)}
               />
             </div>
           </div>

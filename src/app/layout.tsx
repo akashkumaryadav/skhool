@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
+import SideNavigation from "./components/SideNavigation";
+import { getSession } from "@/app/lib/actions"; // Assuming getSession is in this path
+import { isTeacher } from "./lib/actions";
+import { useMemo } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,12 +27,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+ 
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" className="h-full">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-row flex-nowrap`}>
+        <Providers>
+          {/* Conditionally render SideNavigation */}
+          
+            {/* <SideNavigation /> */}
+           {/* The main content area */}
+          <main className="flex-grow overflow-y-auto w-full">
+            {children}
+         </main>
+        </Providers>
       </body>
     </html>
   );

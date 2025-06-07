@@ -24,3 +24,26 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select {
+  color: var(--foreground);
+  border: 1px solid var(--foreground); /* Add a subtle border */
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+select:focus {
+    transform: scaleY(0);
+  }
+} */
+
+.animate-blink {
+  animation: blink 0.2s ease-in-out;
+}
