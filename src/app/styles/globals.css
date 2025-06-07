@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+/*
+  If your code editor displays a warning like "Unknown at rule @tailwindcss" for the directives above,
+  it's commonly an issue with the editor's linter or CSS validation not fully recognizing
+  Tailwind-specific syntax out-of-the-box.
+
+  Ensure you have the official "Tailwind CSS IntelliSense" extension (or equivalent for your editor)
+  installed and enabled. This usually resolves such warnings.
+
+  These directives are standard and correct for Tailwind CSS and will be processed
+  properly by Next.js and PostCSS during the build.
+*/
+
+/* You can add any custom global styles here if needed */
+body {
+  /* Example: antialiased is often applied via className in _document.tsx or here */
+  /* -webkit-font-smoothing: antialiased; */
+  /* -moz-osx-font-smoothing: grayscale; */
+}
