@@ -5,6 +5,7 @@ import {
   HomeIcon, UsersIcon, CalendarDaysIcon, DocumentChartBarIcon, 
   BookOpenIcon, SparklesIcon, Cog6ToothIcon, XMarkIcon, ChatBubbleLeftRightIcon
 } from '@/app/components/icons'; // Ensure icons are correctly imported/defined in constants.tsx
+import Link from 'next/link';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -12,13 +13,13 @@ interface SidebarProps {
 }
 
 const navigationItems: NavItem[] = [
-  { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-  { name: 'Students', href: '#', icon: UsersIcon },
-  { name: 'Attendance', href: '#', icon: CalendarDaysIcon },
-  { name: 'Grades/Performance', href: '#', icon: DocumentChartBarIcon },
-  { name: 'Learning Resources', href: '#', icon: BookOpenIcon },
-  { name: 'AI Helper', href: '#', icon: ChatBubbleLeftRightIcon }, // Changed from Sparkles to Chat specific
-  { name: 'Settings', href: '#', icon: Cog6ToothIcon },
+  { name: 'Dashboard', href: '/teacher/dashboard', icon: HomeIcon, current: true },
+  { name: 'Students', href: 'students', icon: UsersIcon },
+  { name: 'Attendance', href: 'attendance', icon: CalendarDaysIcon },
+  { name: 'Grades/Performance', href: 'grades', icon: DocumentChartBarIcon },
+  { name: 'Learning Resources', href: 'resources', icon: BookOpenIcon },
+  { name: 'AI Helper', href: 'ai-helper', icon: ChatBubbleLeftRightIcon }, // Changed from Sparkles to Chat specific
+  { name: 'Settings', href: 'settings', icon: Cog6ToothIcon },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
@@ -54,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           {navigationItems.map((item) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
               className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200
@@ -66,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             >
               <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
               {item.name}
-            </a>
+            </Link>
           ))}
         </nav>
 

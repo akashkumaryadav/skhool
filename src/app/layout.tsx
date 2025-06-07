@@ -1,13 +1,12 @@
 // app/layout.tsx
 "use client"; // This is a client component because it manages sidebar state
 
-import React, { useState, useCallback } from "react";
-import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
-import Sidebar from "@/app/components/SideNavigation";
 import Header from "@/app/components/Header";
-import "../app/styles/globals.css"; // Import global styles including Tailwind directives
+import Sidebar from "@/app/components/SideNavigation";
 import { APP_NAME } from "@/app/constants"; // Assuming APP_NAME is defined in constants
-import { User } from "@/app/types/types"; // Assuming User type is still relevant for Header
+import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
+import React, { useCallback, useState } from "react";
+import "../app/styles/globals.css"; // Import global styles including Tailwind directives
 import Providers from "./providers";
 
 // Metadata can be exported statically for Server Components,
@@ -40,7 +39,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         {/* However, if you need direct control or have specific tags, Head can still be used. */}
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Skhool - Teacher Dashboard</title>
+        <title>{APP_NAME}</title>
         <meta
           name="description"
           content="A modern dashboard for teachers at Skhool, facilitating student management, performance tracking, and access to AI-powered resources. Designed for Indian schools to digitalize their workflow."
@@ -52,7 +51,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </Head>
       <body className="bg-gray-100 antialiased">
-        <Providers >
+        <Providers>
           <div className="flex h-screen bg-blue-600 font-sans">
             <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
             <div className="flex-1 flex flex-col overflow-hidden">
