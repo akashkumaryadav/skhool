@@ -252,7 +252,7 @@ const GradesPage: React.FC = () => {
         });
 
     // Simulate loading delay
-    setTimeout(() => setIsLoading(false), 300);
+    setTimeout(() => setIsLoading(false), 800);
     return processedData;
   }, [selectedClass, selectedSection, selectedExamType, searchTerm]);
 

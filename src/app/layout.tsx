@@ -1,11 +1,8 @@
 // app/layout.tsx
-"use client"; // This is a client component because it manages sidebar state
 
-import Header from "@/app/components/Header";
-import Sidebar from "@/app/components/SideNavigation";
 import { APP_NAME } from "@/app/constants"; // Assuming APP_NAME is defined in constants
 import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
-import React, { useCallback, useState } from "react";
+import React from "react";
 import "../app/styles/globals.css"; // Import global styles including Tailwind directives
 import Providers from "./providers";
 
@@ -26,12 +23,6 @@ interface RootLayoutProps {
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = useCallback(() => {
-    setSidebarOpen((prev) => !prev);
-  }, []);
-
   return (
     <html lang="en">
       <Head>
@@ -45,18 +36,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
           content="A modern dashboard for teachers at Skhool, facilitating student management, performance tracking, and access to AI-powered resources. Designed for Indian schools to digitalize their workflow."
         />
         <link rel="icon" href="/favicon.ico" /> {/* Example favicon */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+        {/* Removed custom font link as it is now in _document.tsx */}
       </Head>
       <body className="bg-gray-100 antialiased">
         <Providers>
           <div className="flex h-screen bg-blue-600 font-sans">
-            <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
             <div className="flex-1 flex flex-col overflow-hidden">
-              <Header toggleSidebar={toggleSidebar} />
-              <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-6 lg:p-8">
+              <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-0 m-0">
                 {children}
               </main>
             </div>
@@ -66,3 +52,27 @@ export default function RootLayout({ children }: RootLayoutProps) {
     </html>
   );
 }
+
+export const metadata = {
+  title: "Skhool - AI-Powered School Management",
+  description:
+    "Revolutionize your school management with Skhool. AI tools for attendance, grades, resources, and more.",
+  openGraph: {
+    title: "Skhool - AI-Powered School Management",
+    description:
+      "Revolutionize your school management with Skhool. AI tools for attendance, grades, resources, and more.",
+    url: "https://skhool.co.in",
+    siteName: "Skhool",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Skhool - AI-Powered School Management",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+};
+export const revalidate = 60;
