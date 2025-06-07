@@ -1,20 +1,55 @@
-@import 'tailwindcss';
+@import "tailwindcss"; /* Imports Tailwind's base, theme, components, and utilities */
 
-/*
-  If your code editor displays a warning like "Unknown at rule @tailwindcss" for the directives above,
-  it's commonly an issue with the editor's linter or CSS validation not fully recognizing
-  Tailwind-specific syntax out-of-the-box.
+@theme {
+  /* Application Specific Theme Variables */
+  --color-app-bg: hsla(30, 20%, 96%, 1);
+  --font-app-primary: "Lora", "Merriweather", "Georgia", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-app-secondary: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  /* Default foreground color for the app */
+  --color-app-fg: oklch(0.21 0.034 264.665); /* Equivalent to Tailwind's default gray-900 */
 
-  Ensure you have the official "Tailwind CSS IntelliSense" extension (or equivalent for your editor)
-  installed and enabled. This usually resolves such warnings.
+  /* Overriding default sans font to use the app's primary font */
+  --font-sans: var(--font-app-primary);
 
-  These directives are standard and correct for Tailwind CSS and will be processed
-  properly by Next.js and PostCSS during the build.
-*/
+  /* Migrated Skhool Specific Colors */
+  --color-skhool-blue-50: #eff6ff;
+  --color-skhool-blue-100: #dbeafe;
+  --color-skhool-blue-200: #bfdbfe;
+  --color-skhool-blue-300: #93c5fd;
+  --color-skhool-blue-400: #60a5fa;
+  --color-skhool-blue-500: #3b82f6;
+  --color-skhool-blue-600: #2563eb;
+  --color-skhool-blue-700: #1d4ed8;
+  --color-skhool-blue-800: #1e40af;
+  --color-skhool-blue-900: #1e3a8a;
+  --color-skhool-blue-950: #172554;
+  --color-skhool-orange-500: #f97316;
+  --color-skhool-orange-600: #ea580c;
+  
+  /* Default theme variables from Tailwind are implicitly imported via "@import 'tailwindcss';" */
+  /* You can override specific default theme variables here if needed, e.g.: */
+  /* --breakpoint-sm: 30rem; */
+}
 
-/* You can add any custom global styles here if needed */
-body {
-  /* Example: antialiased is often applied via className in _document.tsx or here */
-  /* -webkit-font-smoothing: antialiased; */
-  /* -moz-osx-font-smoothing: grayscale; */
+@layer base {
+  body {
+    background-color: var(--color-app-bg);
+    font-family: var(--font-sans); /* Uses the overridden --font-sans which points to --font-app-primary */
+    color: var(--color-app-fg);
+    @apply antialiased;
+  }
+
+  /* Add any other global base styles here */
+  /* For example, consistent heading styles (though often handled by utility classes) */
+  /* h1, h2, h3, h4, h5, h6 { @apply font-app-secondary; } */
+}
+  
+@layer components {
+  .custom-text-title {
+    /* Uses font-app-primary (via font-sans), text-app-fg, and other utilities */
+    @apply font-sans text-app-fg font-bold text-2xl; 
+  }
+
+  /* Add other custom component styles here */
 }

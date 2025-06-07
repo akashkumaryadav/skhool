@@ -5,7 +5,7 @@ import React, { useState, useCallback } from "react";
 import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
 import Sidebar from "@/app/components/SideNavigation";
 import Header from "@/app/components/Header";
-import "@/app/styles/globals.css"; // Import global styles including Tailwind directives
+import "../app/styles/globals.css"; // Import global styles including Tailwind directives
 import { APP_NAME } from "@/app/constants"; // Assuming APP_NAME is defined in constants
 import { User } from "@/app/types/types"; // Assuming User type is still relevant for Header
 import Providers from "./providers";
@@ -53,7 +53,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </Head>
       <body className="bg-gray-100 antialiased">
         <Providers >
-          <div className="flex h-screen bg-gray-100 font-sans">
+          <div className="flex h-screen bg-blue-600 font-sans">
             <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
             <div className="flex-1 flex flex-col overflow-hidden">
               <Header toggleSidebar={toggleSidebar} />
