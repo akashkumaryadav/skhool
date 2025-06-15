@@ -1,23 +1,27 @@
-
 "use client";
-import React, { useState } from 'react';
-import { Bars3Icon, BellIcon, MagnifyingGlassIcon } from '@/app/components/icons'; // Ensure icons are correctly imported/defined in constants.tsx
-import { User } from '@/app/types/types'; // Adjust the import path as necessary
-import Image from 'next/image';
+import React, { useState } from "react";
+import {
+  Bars3Icon,
+  BellIcon,
+  MagnifyingGlassIcon,
+} from "@/app/components/icons"; // Ensure icons are correctly imported/defined in constants.tsx
+import { User } from "@/app/types/types"; // Adjust the import path as necessary
+import Image from "next/image";
 
 interface HeaderProps {
   toggleSidebar: () => void;
+  currentUser: Record<string, any>;
 }
 
-const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
+const Header: React.FC<HeaderProps> = ({ toggleSidebar, currentUser }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  
+
   // Placeholder user data
-  const currentUser: User = {
-    name: 'Mrs. Sharma',
-    avatarUrl: 'https://picsum.photos/seed/teacher1/100/100',
-    role: 'Teacher'
-  };
+  //   const currentUser: User = {
+  //     name: 'Mrs. Sharma',
+  //     avatarUrl: 'https://picsum.photos/seed/teacher1/100/100',
+  //     role: 'Teacher'
+  //   };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-20">
@@ -37,8 +41,8 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
               </div>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search students, resources..."
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
               />
@@ -46,8 +50,9 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
           </div>
 
           <div className="flex items-center space-x-4">
-             <span className="text-gray-700 hidden sm:block">
-              Welcome, <span className="font-semibold">{currentUser.name}</span>!
+            <span className="text-gray-700 hidden sm:block">
+              Welcome,{" "}
+              <span className="font-semibold">{currentUser.firstname}</span>!
             </span>
             {/* Notification Bell */}
             <button className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-skhool-blue-500">
@@ -67,11 +72,14 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                 >
                   <span className="sr-only">Open user menu</span>
                   <Image
-                  width={32}
-                  height={32}
+                    width={32}
+                    height={32}
                     className="h-8 w-8 rounded-full"
-                    src={currentUser.avatarUrl || 'https://picsum.photos/seed/default-avatar/100/100'}
-                    alt={currentUser.name}
+                    src={
+                      currentUser.avatarUrl ||
+                      "https://picsum.photos/seed/default-avatar/100/100"
+                    }
+                    alt={currentUser.firstname}
                   />
                 </button>
               </div>
@@ -114,4 +122,3 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 };
 
 export default Header;
-    

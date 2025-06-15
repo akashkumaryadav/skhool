@@ -2,8 +2,8 @@
 "use client";
 
 import React from 'react';
-import { AcademicCapIcon, BookOpenIcon, CalendarDaysIcon, ChartBarIcon, MegaphoneIcon } from '../../constants';
-import DashboardCard from '../../components/DashboardCard'; 
+import { AcademicCapIcon, BookOpenIcon, CalendarDaysIcon, ChartBarIcon, MegaphoneIcon } from '../constants';
+import DashboardCard from '../components/DashboardCard'; 
 
 // Mock data for student dashboard
 const mockStudentSummary = {

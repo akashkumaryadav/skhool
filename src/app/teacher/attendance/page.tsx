@@ -6,150 +6,14 @@ import {
   UserCircleIcon,
   UsersIcon,
 } from "@/app/components/icons"; // Adjusted path
-import {
-  AttendanceStatus,
-  Student,
-  StudentForAttendance,
-} from "@/app/types/types"; // Adjusted path
-import React, { useEffect, useMemo, useState } from "react";
+import { AttendanceStatus, StudentForAttendance } from "@/app/types/types"; // Adjusted path
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import Image from "next/image";
+import React, { useMemo, useState } from "react";
 import { animated, useTransition } from "react-spring"; // Standard import
 
-// Mock Data
-const mockStudentsData: Student[] = [
-  // Class 6A
-  {
-    id: "s1",
-    studentIdNo: "SKL001",
-    firstName: "Aarav",
-    lastName: "Sharma",
-    class: "6th",
-    section: "A",
-    rollNumber: 1,
-    gender: "Male",
-    dateOfBirth: "2012-05-15",
-    parentName: "Mr. Rajesh Sharma",
-    parentContact: "9876543210",
-    avatarUrl: "https://picsum.photos/seed/aarav/40/40",
-  },
-  {
-    id: "s3",
-    studentIdNo: "SKL003",
-    firstName: "Rohan",
-    lastName: "Verma",
-    class: "6th",
-    section: "A",
-    rollNumber: 2,
-    gender: "Male",
-    dateOfBirth: "2012-08-10",
-    parentName: "Mr. Suresh Verma",
-    parentContact: "9988776655",
-    avatarUrl: "https://picsum.photos/seed/rohan/40/40",
-  },
-  {
-    id: "s6",
-    studentIdNo: "SKL006",
-    firstName: "Ishaan",
-    lastName: "Mehta",
-    class: "6th",
-    section: "A",
-    rollNumber: 3,
-    gender: "Male",
-    dateOfBirth: "2012-02-12",
-    parentName: "Mr. Alok Mehta",
-    parentContact: "9876500000",
-    avatarUrl: "https://picsum.photos/seed/ishaan/40/40",
-  },
-  {
-    id: "s7",
-    studentIdNo: "SKL007",
-    firstName: "Myra",
-    lastName: "Joshi",
-    class: "6th",
-    section: "A",
-    rollNumber: 4,
-    gender: "Female",
-    dateOfBirth: "2012-09-30",
-    parentName: "Mrs. Kavita Joshi",
-    parentContact: "k.joshi@example.com",
-    avatarUrl: "https://picsum.photos/seed/myra/40/40",
-  },
-
-  // Class 7B
-  {
-    id: "s2",
-    studentIdNo: "SKL002",
-    firstName: "Priya",
-    lastName: "Singh",
-    class: "7th",
-    section: "B",
-    rollNumber: 5,
-    gender: "Female",
-    dateOfBirth: "2011-03-20",
-    parentName: "Mrs. Anita Singh",
-    parentContact: "anita.singh@example.com",
-    avatarUrl: "https://picsum.photos/seed/priya/40/40",
-  },
-  {
-    id: "s5",
-    studentIdNo: "SKL005",
-    firstName: "Vikram",
-    lastName: "Kumar",
-    class: "7th",
-    section: "B",
-    rollNumber: 8,
-    gender: "Male",
-    dateOfBirth: "2011-01-30",
-    parentName: "Mrs. Sunita Kumar",
-    parentContact: "9123456789",
-    avatarUrl: "https://picsum.photos/seed/vikram/40/40",
-  },
-  {
-    id: "s8",
-    studentIdNo: "SKL008",
-    firstName: "Aditi",
-    lastName: "Rao",
-    class: "7th",
-    section: "B",
-    rollNumber: 6,
-    gender: "Female",
-    dateOfBirth: "2011-07-14",
-    parentName: "Mr. Mohan Rao",
-    parentContact: "9112233445",
-    avatarUrl: "https://picsum.photos/seed/aditi/40/40",
-  },
-
-  // Class 8C
-  {
-    id: "s4",
-    studentIdNo: "SKL004",
-    firstName: "Sneha",
-    lastName: "Patel",
-    class: "8th",
-    section: "C",
-    rollNumber: 12,
-    gender: "Female",
-    dateOfBirth: "2010-11-25",
-    parentName: "Mr. Dinesh Patel",
-    parentContact: "dinesh.patel@example.com",
-    avatarUrl: "https://picsum.photos/seed/sneha/40/40",
-  },
-  {
-    id: "s9",
-    studentIdNo: "SKL009",
-    firstName: "Arjun",
-    lastName: "Reddy",
-    class: "8th",
-    section: "C",
-    rollNumber: 10,
-    gender: "Male",
-    dateOfBirth: "2010-04-05",
-    parentName: "Mr. Krishna Reddy",
-    parentContact: "9000011111",
-    avatarUrl: "https://picsum.photos/seed/arjun/40/40",
-  },
-];
-
-const classes = ["6th", "7th", "8th"];
+const classes = Array.from({ length: 12 }, (_, i) => `${i + 1}`); // Generates ["1th", "2th", ..., "12th"]
 const sections = ["A", "B", "C"];
 
 const getTodayDateString = () => {
@@ -166,47 +30,42 @@ const AttendancePage: React.FC = () => {
   );
   const [selectedClass, setSelectedClass] = useState<string>(classes[0]);
   const [selectedSection, setSelectedSection] = useState<string>(sections[0]);
-  const [studentsForAttendance, setStudentsForAttendance] = useState<
+  //   const [studentsForAttendance, setStudentsForAttendance] = useState<
+  //     StudentForAttendance[]
+  //   >([]);
+  const { data: studentsForAttendance, isLoading } = useQuery<
     StudentForAttendance[]
-  >([]);
-  const [isLoading, setIsLoading] = useState(false); // For simulating data fetch
-
-  // Simulate fetching students based on filters
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const filtered = mockStudentsData
-        .filter(
-          (s) => s.class === selectedClass && s.section === selectedSection
-        )
-        .map((student) => ({
-          ...student,
-          attendanceStatus: AttendanceStatus.NOT_MARKED, // Default status
-          key: student.id, // Unique key for react-spring
-        }));
-      setStudentsForAttendance(filtered);
-      setIsLoading(false);
-    }, 500);
-  }, [selectedDate, selectedClass, selectedSection]);
+  >({
+    queryKey: ["students", selectedClass, selectedSection],
+    queryFn: async () => {
+      const response = await axios.get<StudentForAttendance[]>(
+        `/api/teacher/student/get_attendance?className=${selectedClass}&section=${selectedSection}&date=${selectedDate}`
+      );
+      return response.data.map((student) => ({
+        ...student,
+        attendanceStatus: AttendanceStatus.NOT_MARKED, // Default status
+        key: student.id, // Unique key for react-spring
+      }));
+    },
+  });
 
   const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
-    setStudentsForAttendance((prevStudents) =>
-      prevStudents.map((student) =>
-        student.id === studentId
-          ? { ...student, attendanceStatus: status }
-          : student
-      )
-    );
+    // setStudentsForAttendance((prevStudents) =>
+    //   prevStudents.map((student) =>
+    //     student.id === studentId
+    //       ? { ...student, attendanceStatus: status }
+    //       : student
+    //   )
+    // );
   };
-
+  console.log("studentsForAttendance", studentsForAttendance);
   const markAllPresent = () => {
-    setStudentsForAttendance((prevStudents) =>
-      prevStudents.map((student) => ({
-        ...student,
-        attendanceStatus: AttendanceStatus.PRESENT,
-      }))
-    );
+    // setStudentsForAttendance((prevStudents) =>
+    //   prevStudents.map((student) => ({
+    //     ...student,
+    //     attendanceStatus: AttendanceStatus.PRESENT,
+    //   }))
+    // );
   };
 
   const saveAttendance = () => {
@@ -215,7 +74,7 @@ const AttendancePage: React.FC = () => {
       date: selectedDate,
       class: selectedClass,
       section: selectedSection,
-      attendance: studentsForAttendance.map((s) => ({
+      attendance: studentsForAttendance?.map((s) => ({
         studentId: s.id,
         status: s.attendanceStatus,
       })),
@@ -238,7 +97,7 @@ const AttendancePage: React.FC = () => {
   });
 
   const attendanceCounts = useMemo(() => {
-    return studentsForAttendance.reduce(
+    return studentsForAttendance?.reduce(
       (acc, student) => {
         if (student.attendanceStatus === AttendanceStatus.PRESENT)
           acc.present++;
@@ -255,10 +114,12 @@ const AttendancePage: React.FC = () => {
   const renderStudentRow = (student: StudentForAttendance) => (
     <div className="grid grid-cols-12 gap-2 items-center py-3 px-2 border-b border-gray-200">
       <div className="col-span-12 sm:col-span-4 flex items-center">
-        {student.avatarUrl ? (
-          <img
-            src={student.avatarUrl}
-            alt={`${student.firstName} ${student.lastName}`}
+        {student.profilePic ? (
+          <Image
+            width={40}
+            height={40}
+            src={student.profilePic}
+            alt={`${student.firstname} ${student.lastname}`}
             className="w-10 h-10 rounded-full mr-3 object-cover"
           />
         ) : (
@@ -266,9 +127,9 @@ const AttendancePage: React.FC = () => {
         )}
         <div>
           <p className="text-sm font-medium text-gray-800">
-            {student.firstName} {student.lastName}
+            {student.firstname} {student.lastname}
           </p>
-          <p className="text-xs text-gray-500">Roll No: {student.rollNumber}</p>
+          <p className="text-xs text-gray-500">Roll No: {student.rollNo}</p>
         </div>
       </div>
       <div className="col-span-12 sm:col-span-8 flex flex-wrap gap-2 justify-start sm:justify-end mt-2 sm:mt-0">
@@ -382,25 +243,25 @@ const AttendancePage: React.FC = () => {
           <div className="flex gap-x-4 gap-y-2 flex-wrap text-sm">
             <span className="font-semibold">Summary:</span>
             <span className="text-green-600">
-              Present: {attendanceCounts.present}
+              Present: {attendanceCounts?.present}
             </span>
             <span className="text-red-500">
-              Absent: {attendanceCounts.absent}
+              Absent: {attendanceCounts?.absent}
             </span>
             <span className="text-yellow-500">
-              Late: {attendanceCounts.late}
+              Late: {attendanceCounts?.late}
             </span>
             <span className="text-gray-500">
-              Not Marked: {attendanceCounts.notMarked}
+              Not Marked: {attendanceCounts?.notMarked}
             </span>
             <span className="text-gray-700">
-              Total: {studentsForAttendance.length}
+              Total: {studentsForAttendance?.length}
             </span>
           </div>
           <div className="flex gap-2 mt-2 sm:mt-0">
             <button
               onClick={markAllPresent}
-              disabled={isLoading || studentsForAttendance.length === 0}
+              disabled={isLoading || studentsForAttendance?.length === 0}
               className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 disabled:opacity-50"
             >
               <UsersIcon className="w-5 h-5 mr-2" />
@@ -421,7 +282,7 @@ const AttendancePage: React.FC = () => {
           <div className="p-10 text-center text-gray-500">
             Loading students...
           </div>
-        ) : studentsForAttendance.length === 0 ? (
+        ) : studentsForAttendance?.length === 0 ? (
           <div className="p-10 text-center text-gray-500">
             No students found for this class/section.
           </div>
@@ -437,17 +298,19 @@ const AttendancePage: React.FC = () => {
       </div>
 
       {/* Save Button */}
-      {studentsForAttendance.length > 0 && !isLoading && (
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={saveAttendance}
-            className="flex items-center bg-skhool-blue-600 hover:bg-skhool-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-skhool-blue-500 focus:ring-opacity-75 transform hover:scale-105"
-          >
-            <CheckCircleIcon className="w-6 h-6 mr-2" />
-            Save Attendance
-          </button>
-        </div>
-      )}
+      {studentsForAttendance &&
+        studentsForAttendance.length > 0 &&
+        !isLoading && (
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={saveAttendance}
+              className="flex items-center bg-primary hover:bg-skhool-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-xl hover:shadow-2xl transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-skhool-blue-500 focus:ring-opacity-75 transform hover:scale-105"
+            >
+              <CheckCircleIcon className="w-6 h-6 mr-2" />
+              Save Attendance
+            </button>
+          </div>
+        )}
     </div>
   );
 };

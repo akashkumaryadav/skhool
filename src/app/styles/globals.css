@@ -1,19 +1,26 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
 @import "tailwindcss"; /* Imports Tailwind's base, theme, components, and utilities */
 
 @theme {
   /* Application Specific Theme Variables */
   --color-app-bg: hsla(30, 20%, 96%, 1);
-  --font-app-primary: "Lora", "Merriweather", "Georgia", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-app-secondary: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
-  
+  --font-app-primary: "Lora", "Merriweather", "Georgia", system-ui,
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-app-secondary: "Playfair Display", Georgia, Cambria, "Times New Roman",
+    Times, serif;
+
   /* Default foreground color for the app */
-  --color-app-fg: oklch(0.21 0.034 264.665); /* Equivalent to Tailwind's default gray-900 */
+  --color-app-fg: oklch(
+    0.21 0.034 264.665
+  ); /* Equivalent to Tailwind's default gray-900 */
 
   /* Overriding default sans font to use the app's primary font */
   --font-sans: var(--font-app-primary);
 
   /* Migrated Skhool Specific Colors */
-  --color-skhool-blue-50: #eff6ff;
+  /* --color-skhool-blue-50: #eff6ff;
   --color-skhool-blue-100: #dbeafe;
   --color-skhool-blue-200: #bfdbfe;
   --color-skhool-blue-300: #93c5fd;
@@ -25,31 +32,55 @@
   --color-skhool-blue-900: #1e3a8a;
   --color-skhool-blue-950: #172554;
   --color-skhool-orange-500: #f97316;
-  --color-skhool-orange-600: #ea580c;
-  
-  /* Default theme variables from Tailwind are implicitly imported via "@import 'tailwindcss';" */
-  /* You can override specific default theme variables here if needed, e.g.: */
-  /* --breakpoint-sm: 30rem; */
+  --color-skhool-orange-600: #ea580c; */
+
+  --color-base-100: oklch(96% 0.018 272.314);
+  --color-base-200: oklch(93% 0.034 272.788);
+  --color-base-300: oklch(87% 0.065 274.039);
+  --color-base-content: oklch(35% 0.144 278.697);
+  --color-primary: oklch(58% 0.233 277.117);
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: oklch(68% 0.169 237.323);
+  --color-secondary-content: oklch(97% 0.013 236.62);
+  --color-accent: oklch(65% 0.241 354.308);
+  --color-accent-content: oklch(97% 0.014 343.198);
+  --color-neutral: oklch(51% 0.262 276.966);
+  --color-neutral-content: oklch(96% 0.018 272.314);
+  --color-info: oklch(60% 0.126 221.723);
+  --color-info-content: oklch(98% 0.019 200.873);
+  --color-success: oklch(59% 0.145 163.225);
+  --color-success-content: oklch(97% 0.021 166.113);
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: oklch(98% 0.022 95.277);
+  --color-error: oklch(59% 0.249 0.584);
+  --color-error-content: oklch(97% 0.014 343.198);
+  --radius-selector: 2rem;
+  --radius-field: 2rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
 }
 
-@layer base {
-  body {
-    background-color: var(--color-app-bg);
-    font-family: var(--font-sans); /* Uses the overridden --font-sans which points to --font-app-primary */
-    color: var(--color-app-fg);
-    @apply antialiased;
-  }
+/* Default theme variables from Tailwind are implicitly imported via "@import 'tailwindcss';" */
+/* You can override specific default theme variables here if needed, e.g.: */
+/* --breakpoint-sm: 30rem; */
 
-  /* Add any other global base styles here */
-  /* For example, consistent heading styles (though often handled by utility classes) */
-  /* h1, h2, h3, h4, h5, h6 { @apply font-app-secondary; } */
+* {
+  font-family: "Outfit", "Noto Sans JP", "Noto Sans", "Vazirmatn", sans-serif;
 }
-  
+
 @layer components {
   .custom-text-title {
     /* Uses font-app-primary (via font-sans), text-app-fg, and other utilities */
-    @apply font-sans text-app-fg font-bold text-2xl; 
+    @apply font-sans text-app-fg font-bold text-2xl;
   }
 
   /* Add other custom component styles here */
+}
+
+a{
+  color: none;
 }

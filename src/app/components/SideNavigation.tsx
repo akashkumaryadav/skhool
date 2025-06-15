@@ -1,42 +1,108 @@
-
-import React from 'react';
-import { NavItem } from '@/app/types/types'; // Adjust the import path as necessary
-import { 
-  HomeIcon, UsersIcon, CalendarDaysIcon, DocumentChartBarIcon, 
-  BookOpenIcon, SparklesIcon, Cog6ToothIcon, XMarkIcon, ChatBubbleLeftRightIcon
-} from '@/app/components/icons'; // Ensure icons are correctly imported/defined in constants.tsx
-import Link from 'next/link';
+import React from "react";
+import { NavItem } from "@/app/types/types"; // Adjust the import path as necessary
+import {
+  HomeIcon,
+  UsersIcon,
+  CalendarDaysIcon,
+  DocumentChartBarIcon,
+  BookOpenIcon,
+  SparklesIcon,
+  Cog6ToothIcon,
+  XMarkIcon,
+  ChatBubbleLeftRightIcon,
+  AcademicCapIcon,
+} from "@/app/components/icons"; // Ensure icons are correctly imported/defined in constants.tsx
+import Link from "next/link";
 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
+  role: string; // Optional prop to differentiate between teacher and student views
 }
 
 const navigationItems: NavItem[] = [
-  { name: 'Dashboard', href: '/teacher/dashboard', icon: HomeIcon, current: true },
-  { name: 'Students', href: 'students', icon: UsersIcon },
-  { name: 'Attendance', href: 'attendance', icon: CalendarDaysIcon },
-  { name: 'Grades/Performance', href: 'grades', icon: DocumentChartBarIcon },
-  { name: 'Learning Resources', href: 'resources', icon: BookOpenIcon },
-  { name: 'AI Helper', href: 'ai-helper', icon: ChatBubbleLeftRightIcon }, // Changed from Sparkles to Chat specific
-  { name: 'Settings', href: 'settings', icon: Cog6ToothIcon },
+  {
+    name: "Dashboard",
+    href: "/teacher/dashboard",
+    icon: HomeIcon,
+    current: true,
+    type: "teacher", // Added type to differentiate
+  },
+  { name: "Students", href: "/teacher/students", icon: UsersIcon , type: "teacher" },
+  { name: "Attendance", href: "/teacher/attendance", icon: CalendarDaysIcon, type: "teacher" },
+  {
+    name: "Grades/Performance",
+    href: "/teacher/grades",
+    icon: DocumentChartBarIcon,
+    type: "teacher",
+  },
+  {
+    name: "Learning Resources",
+    href: "/teacher/resources",
+    icon: BookOpenIcon,
+    type: "teacher",
+  },
+  {
+    name: "AI Helper",
+    href: "/teacher/ai-helper",
+    icon: ChatBubbleLeftRightIcon,
+    type: "teacher",
+  }, // Changed from Sparkles to Chat specific
+  { name: "Settings", href: "/teacher/settings", icon: Cog6ToothIcon , type: "teacher" },
+
+  {
+    name: "Student Dashboard",
+    href: "/student/dashboard",
+    icon: HomeIcon,
+    type: "student",
+  },
+  {
+    name: "My Courses",
+    href: "/student/courses",
+    icon: AcademicCapIcon,
+    type: "student",
+  },
+  {
+    name: "My Grades",
+    href: "/student/grades",
+    icon: DocumentChartBarIcon,
+    type: "student",
+  },
+  {
+    name: "My Attendance",
+    href: "/student/attendance",
+    icon: CalendarDaysIcon,
+    type: "student",
+  },
+  {
+    name: "View Resources",
+    href: "/student/resources",
+    icon: BookOpenIcon,
+    type: "student",
+  },
+  {
+    name: "Student Settings",
+    href: "/student/settings",
+    icon: Cog6ToothIcon,
+    type: "student",
+  },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, role }) => {
   return (
     <>
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden" 
+        <div
+          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
           onClick={toggleSidebar}
           aria-hidden="true"
         ></div>
       )}
 
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-skhool-blue-800 text-white transition-transform duration-300 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-neutral text-white transition-transform duration-300 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between h-20 px-6 border-b border-skhool-blue-700">
@@ -54,21 +120,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {navigationItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200
+          {navigationItems
+            .filter((n) => n.type === role)
+            .map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200
                 ${
                   item.current
-                    ? 'bg-skhool-blue-900 text-white shadow-lg'
-                    : 'text-skhool-blue-100 hover:bg-skhool-blue-700 hover:text-white'
+                    ? "bg-base-100 text-base-content shadow-lg"
+                    : "text-skhool-blue-100 hover:bg-skhool-blue-700 hover:text-white"
                 }`}
-            >
-              <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
-              {item.name}
-            </Link>
-          ))}
+              >
+                <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
+                {item.name}
+              </Link>
+            ))}
         </nav>
 
         <div className="px-6 py-4 border-t border-skhool-blue-700">
@@ -82,4 +150,3 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 };
 
 export default Sidebar;
-    

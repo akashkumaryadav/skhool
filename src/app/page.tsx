@@ -85,7 +85,7 @@ const LandingNavigation: React.FC = () => {
   const navItems = [
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
-    { name: "Login", href: "/login" },
+    { name: "Login", href: "http://localhost/api/auth/login?http://localhost/teacher" },
   ];
 
   return (
