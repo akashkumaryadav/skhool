@@ -265,7 +265,7 @@ const GradesPage: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => alert("Add New Grades Clicked!")}
-            className="flex items-center bg-skhool-blue-600 hover:bg-skhool-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-skhool-blue-500 focus:ring-opacity-75"
+            className="flex items-center bg-primary hover:bg-skhool-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-skhool-blue-500 focus:ring-opacity-75"
           >
             <PlusCircleIcon className="w-5 h-5 mr-2" />
             Add New Grades

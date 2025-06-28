@@ -10,7 +10,7 @@ import { AttendanceStatus, StudentForAttendance } from "@/app/types/types"; // A
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { animated, useTransition } from "react-spring"; // Standard import
 
 const classes = Array.from({ length: 12 }, (_, i) => `${i + 1}`); // Generates ["1th", "2th", ..., "12th"]
@@ -30,60 +30,74 @@ const AttendancePage: React.FC = () => {
   );
   const [selectedClass, setSelectedClass] = useState<string>(classes[0]);
   const [selectedSection, setSelectedSection] = useState<string>(sections[0]);
-  //   const [studentsForAttendance, setStudentsForAttendance] = useState<
-  //     StudentForAttendance[]
-  //   >([]);
+  const [currentAttendance, setCurrentAttendance] = useState<
+    StudentForAttendance[] | undefined
+  >([]);
   const { data: studentsForAttendance, isLoading } = useQuery<
     StudentForAttendance[]
   >({
-    queryKey: ["students", selectedClass, selectedSection],
+    queryKey: ["students", selectedClass, selectedSection, selectedDate],
     queryFn: async () => {
       const response = await axios.get<StudentForAttendance[]>(
         `/api/teacher/student/get_attendance?className=${selectedClass}&section=${selectedSection}&date=${selectedDate}`
       );
       return response.data.map((student) => ({
         ...student,
-        attendanceStatus: AttendanceStatus.NOT_MARKED, // Default status
-        key: student.id, // Unique key for react-spring
+        status: student.status, // Default status
+        key: student.studentId, // Unique key for react-spring
       }));
     },
   });
 
+  useEffect(() => {
+    // Reset current attendance when class/section/date changes
+    setCurrentAttendance(studentsForAttendance);
+  }, [studentsForAttendance]);
+
   const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
-    // setStudentsForAttendance((prevStudents) =>
-    //   prevStudents.map((student) =>
-    //     student.id === studentId
-    //       ? { ...student, attendanceStatus: status }
-    //       : student
-    //   )
-    // );
+    setCurrentAttendance((prevStudents) =>
+      prevStudents?.map((student) =>
+        student.studentId === studentId
+          ? {
+              ...student,
+              status: status,
+            }
+          : student
+      )
+    );
   };
   console.log("studentsForAttendance", studentsForAttendance);
   const markAllPresent = () => {
-    // setStudentsForAttendance((prevStudents) =>
-    //   prevStudents.map((student) => ({
-    //     ...student,
-    //     attendanceStatus: AttendanceStatus.PRESENT,
-    //   }))
-    // );
+    setCurrentAttendance(
+      studentsForAttendance?.map((s) => ({
+        ...s,
+        status: AttendanceStatus.PRESENT, // Mark all as present
+      }))
+    );
   };
 
   const saveAttendance = () => {
-    // In a real app, this would send data to the backend
-    console.log("Saving attendance:", {
-      date: selectedDate,
-      class: selectedClass,
-      section: selectedSection,
-      attendance: studentsForAttendance?.map((s) => ({
-        studentId: s.id,
-        status: s.attendanceStatus,
-      })),
-    });
-    alert("Attendance saved! (Check console for data)");
+    // Here you would typically send the attendance data to your backend
+    console.log("Saving attendance for:", currentAttendance);
+    // use react-query or axios to send data to your backend
+    axios
+      .post(
+        `/api/teacher/student/update_attendance?date=${selectedDate}`,
+        currentAttendance
+      )
+      .then((response) => {
+        console.log("Attendance saved successfully:", response.data);
+        // Optionally, you can show a success message or reset the form
+        setCurrentAttendance([]);
+      })
+      .catch((error) => {
+        console.error("Error saving attendance:", error);
+        // Optionally, you can show an error message
+      });
   };
 
-  const transitions = useTransition(studentsForAttendance, {
-    key: (item: StudentForAttendance) => item.key,
+  const transitions = useTransition(currentAttendance, {
+    key: (item: StudentForAttendance) => item.studentId,
     from: { opacity: 0, transform: "translateY(20px) scale(0.95)" },
     enter: { opacity: 1, transform: "translateY(0px) scale(1)" },
     leave: {
@@ -99,11 +113,11 @@ const AttendancePage: React.FC = () => {
   const attendanceCounts = useMemo(() => {
     return studentsForAttendance?.reduce(
       (acc, student) => {
-        if (student.attendanceStatus === AttendanceStatus.PRESENT)
+        if (student.status === AttendanceStatus.PRESENT)
           acc.present++;
-        else if (student.attendanceStatus === AttendanceStatus.ABSENT)
+        else if (student.status === AttendanceStatus.ABSENT)
           acc.absent++;
-        else if (student.attendanceStatus === AttendanceStatus.LATE) acc.late++;
+        else if (student.status === AttendanceStatus.LATE) acc.late++;
         else acc.notMarked++;
         return acc;
       },
@@ -141,11 +155,11 @@ const AttendancePage: React.FC = () => {
         ].map((statusOption) => (
           <button
             key={statusOption}
-            onClick={() => handleStatusChange(student.id, statusOption)}
+            onClick={() => handleStatusChange(student.studentId, statusOption)}
             title={`Mark as ${statusOption}`}
             className={`px-3 py-1.5 text-xs rounded-md font-medium transition-all duration-150 ease-in-out border
               ${
-                student.attendanceStatus === statusOption
+                student.status === statusOption
                   ? statusOption === AttendanceStatus.PRESENT
                     ? "bg-green-500 text-white border-green-500 shadow-md"
                     : statusOption === AttendanceStatus.ABSENT

@@ -23,7 +23,7 @@ interface SidebarProps {
 const navigationItems: NavItem[] = [
   {
     name: "Dashboard",
-    href: "/teacher/dashboard",
+    href: "/teacher/",
     icon: HomeIcon,
     current: true,
     type: "teacher", // Added type to differentiate
@@ -89,6 +89,10 @@ const navigationItems: NavItem[] = [
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, role }) => {
+  const [selected, setSelected] = React.useState<string>(
+    navigationItems.find((item) => item.current)?.name || ""
+  );
+
   return (
     <>
       {/* Overlay for mobile */}
@@ -126,9 +130,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, role }) => {
               <Link
                 key={item.name}
                 href={item.href}
+                onClick={() => {
+                  setSelected(item.name);
+                }}
                 className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200
                 ${
-                  item.current
+                  selected === item.name
                     ? "bg-base-100 text-base-content shadow-lg"
                     : "text-skhool-blue-100 hover:bg-skhool-blue-700 hover:text-white"
                 }`}

@@ -2,7 +2,7 @@ import React from 'react'; // Added to resolve React namespace error
 
 export interface User {
     name: string;
-    avatarUrl?: string;
+    profilePic?: string;
     role: string;
 }
 
@@ -27,10 +27,10 @@ export interface NavItem {
 }
 
 export enum AttendanceStatus {
-    PRESENT = "Present",
-    ABSENT = "Absent",
-    LATE = "Late",
-    NOT_MARKED = "Not Marked",
+    PRESENT = "PRESENT",
+    ABSENT = "ABSENT",
+    LATE = "LATE",
+    NOT_MARKED = "NOT_MARKED", // For cases where attendance hasn't been taken yet
 }
 
 export interface StudentAttendance {
@@ -62,9 +62,15 @@ export interface Student {
     organization?: string; // Optional: if linked to a specific school or organization
 }
 
-export interface StudentForAttendance extends Student {
-    attendanceStatus: AttendanceStatus;
-    key: string; // Unique key for react-spring list animations
+export interface StudentForAttendance {
+    firstname: string;
+    lastname: string; // Unique key for react-spring list animations
+    studentId: string; // Unique DB id or internal app id
+    rollNo: number; // Roll number for attendance marking
+    className: string; // e.g., "6th", "10th"
+    section: string; // e.g., "A", "B"
+    present:boolean; // Whether the student is present today
+    status?: AttendanceStatus; // Optional: status for today's attendance
 }
 
 // Types for Grades/Performance Page
@@ -173,4 +179,21 @@ export interface StudentCourse {
   nextClassTopic?: string;
   recentActivity?: string; // e.g., "New assignment posted", "Grade updated"
   thumbnailUrl?: string; // Optional image for the course card
+}
+
+export interface Teacher{
+    "id": number;
+    "firstname": string;
+    "lastname": string;
+    "username": string;
+    "organization": number; // Organization ID
+    "category": string;
+    "qualification": string;
+    "bio": string;
+    "profilePic": string;
+    "contact": string;
+    "organizationEmail": string;
+    "personalEmail": string;
+    "gender": string;
+    role?: string; // e.g., "Teacher", "Admin"
 }
