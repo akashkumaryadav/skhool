@@ -7,7 +7,7 @@ import {
   UsersIcon,
 } from "@/app/components/icons"; // Adjusted path
 import { AttendanceStatus, StudentForAttendance } from "@/app/types/types"; // Adjusted path
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
@@ -25,6 +25,8 @@ const getTodayDateString = () => {
 };
 
 const AttendancePage: React.FC = () => {
+  const queryClient = useQueryClient();
+
   const [selectedDate, setSelectedDate] = useState<string>(
     getTodayDateString()
   );
@@ -46,6 +48,34 @@ const AttendancePage: React.FC = () => {
         status: student.status, // Default status
         key: student.studentId, // Unique key for react-spring
       }));
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+        if (!currentAttendance || currentAttendance.length === 0) {
+            throw new Error("No attendance data to save");
+        }
+        setCurrentAttendance([]); // Clear current attendance after savings
+      const response = await axios.post(
+        `/api/teacher/student/update_attendance?date=${selectedDate}`,
+        currentAttendance
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      console.log("Attendance saved successfully:", data);
+    //   // Optionally, you can show a success message or reset the form
+    //   setCurrentAttendance([]);
+      // invalidate the query to refetch students
+      // This will ensure the latest attendance data is fetched
+      queryClient.invalidateQueries({
+        queryKey: ["students", selectedClass, selectedSection, selectedDate],
+      });
+    },
+    onError: (error) => {
+      console.error("Error saving attendance:", error);
+      // Optionally, you can show an error message
     },
   });
 
@@ -77,23 +107,8 @@ const AttendancePage: React.FC = () => {
   };
 
   const saveAttendance = () => {
-    // Here you would typically send the attendance data to your backend
-    console.log("Saving attendance for:", currentAttendance);
-    // use react-query or axios to send data to your backend
-    axios
-      .post(
-        `/api/teacher/student/update_attendance?date=${selectedDate}`,
-        currentAttendance
-      )
-      .then((response) => {
-        console.log("Attendance saved successfully:", response.data);
-        // Optionally, you can show a success message or reset the form
-        setCurrentAttendance([]);
-      })
-      .catch((error) => {
-        console.error("Error saving attendance:", error);
-        // Optionally, you can show an error message
-      });
+    // Use react-query's mutation to handle saving attendance
+    mutation.mutate();
   };
 
   const transitions = useTransition(currentAttendance, {
@@ -103,7 +118,7 @@ const AttendancePage: React.FC = () => {
     leave: {
       opacity: 0,
       transform: "translateY(-20px) scale(0.95)",
-      position: "absolute",
+      position: "ablute",
       width: "100%",
     },
     trail: 50, // Stagger animation
@@ -113,10 +128,8 @@ const AttendancePage: React.FC = () => {
   const attendanceCounts = useMemo(() => {
     return studentsForAttendance?.reduce(
       (acc, student) => {
-        if (student.status === AttendanceStatus.PRESENT)
-          acc.present++;
-        else if (student.status === AttendanceStatus.ABSENT)
-          acc.absent++;
+        if (student.status === AttendanceStatus.PRESENT) acc.present++;
+        else if (student.status === AttendanceStatus.ABSENT) acc.absent++;
         else if (student.status === AttendanceStatus.LATE) acc.late++;
         else acc.notMarked++;
         return acc;
@@ -304,7 +317,7 @@ const AttendancePage: React.FC = () => {
           <div className="relative">
             {transitions((style, item) => (
               <animated.div style={style}>
-                {renderStudentRow(item)}
+                {item && renderStudentRow(item)}
               </animated.div>
             ))}
           </div>

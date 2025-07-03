@@ -86,6 +86,24 @@ const navigationItems: NavItem[] = [
     icon: Cog6ToothIcon,
     type: "student",
   },
+  // for admins
+  {
+    name: "Admin Dashboard",
+    href: "/admin/",
+    icon: HomeIcon,
+    current: true,
+    type: "admin",
+  },
+  { name: "Manage Teachers", href: "/admin/teachers", icon: UsersIcon, type: "admin" },
+  { name: "Manage Students", href: "/admin/students", icon: UsersIcon, type: "admin" },
+  {
+    name: "Admin AI Helper",
+    href: "/admin/ai-helper",
+    icon: ChatBubbleLeftRightIcon,
+    type: "admin",
+  }, // Changed from Sparkles to Chat specific
+  { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, type: "admin" },
+
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, role }) => {

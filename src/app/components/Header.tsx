@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, currentUser }) => {
                       currentUser.avatarUrl ||
                       "https://picsum.photos/seed/default-avatar/100/100"
                     }
-                    alt={currentUser.firstname}
+                    alt={currentUser.firstname || "User Avatar"}
                   />
                 </button>
               </div>

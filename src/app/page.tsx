@@ -85,7 +85,10 @@ const LandingNavigation: React.FC = () => {
   const navItems = [
     { name: "Features", href: "#features" },
     { name: "How It Works", href: "#how-it-works" },
-    { name: "Login", href: "http://localhost/api/auth/login?http://localhost/teacher" },
+    {
+      name: "Login",
+      href: "http://localhost/api/auth/login?http://localhost/teacher",
+    },
   ];
 
   return (
@@ -233,10 +236,10 @@ const features: FeatureItem[] = [
   },
 ];
 
-const FeatureCard: React.FC<{ feature: FeatureItem; style: any }> = ({
-  feature,
-  style,
-}) => {
+const FeatureCard: React.FC<{
+  feature: FeatureItem;
+  style: React.CSSProperties;
+}> = ({ feature, style }) => {
   const [hovered, setHovered] = useState(false);
   const iconSpring = useSpring({
     transform: hovered ? "scale(1.2) rotate(5deg)" : "scale(1) rotate(0deg)",
@@ -245,7 +248,7 @@ const FeatureCard: React.FC<{ feature: FeatureItem; style: any }> = ({
 
   return (
     <animated.div
-      style={style}
+      style={style as unknown as React.CSSProperties}
       className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col items-center text-center"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -288,7 +291,7 @@ const FeaturesSection: React.FC = () => {
           <FeatureCard
             key={features[index].id}
             feature={features[index]}
-            style={style}
+            style={style as unknown as React.CSSProperties}
           />
         ))}
       </div>
@@ -391,7 +394,7 @@ const HowItWorksSection: React.FC = () => {
 const TestimonialCard: React.FC<{
   quote: string;
   author: string;
-  style?: any;
+  style?: React.CSSProperties;
 }> = ({ quote, author, style }) => (
   <animated.div
     style={style}
@@ -442,7 +445,7 @@ const TestimonialsSection: React.FC = () => {
             key={i}
             quote={testimonial.quote}
             author={testimonial.author}
-            style={props}
+            style={props as unknown as React.CSSProperties}
           />
         ))}
       </div>

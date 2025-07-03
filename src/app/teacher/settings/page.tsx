@@ -19,6 +19,7 @@ import { Teacher } from "@/app/types/types";
 import EditProfileModal from "@/app/components/EditProfileModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import Image from "next/image";
 
 // Mock current user data (can be fetched from context or API in a real app)
 // const currentUser: User = {
@@ -111,7 +112,8 @@ const SettingsListItem: React.FC<SettingsItemProps> = ({
         </div>
       </div>
       {action && (
-        <button
+        <div
+          role="button"
           onClick={action}
           className={commonButtonClasses}
           aria-label={actionLabel || title}
@@ -124,7 +126,7 @@ const SettingsListItem: React.FC<SettingsItemProps> = ({
           ) : (
             <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
           )}
-        </button>
+        </div>
       )}
     </div>
   );
@@ -158,6 +160,11 @@ const SettingsPage: React.FC = () => {
   //get user data from reactquery that is already fetched and stored against userData key
   const { data: currentUser } = useQuery<Teacher>({
     queryKey: ["userData"],
+    queryFn: async () => {
+      const response = await axios.get("/api/user/me");
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   console.log("Current User Data:", currentUser);
@@ -172,13 +179,14 @@ const SettingsPage: React.FC = () => {
       .then((response) => {
         console.log("Profile updated successfully:", response.data);
         // Optionally, you can update the currentUser state here if needed
+         queryClient.invalidateQueries({ queryKey: ["userData"] });
+
       })
       .catch((error) => {
         console.error("Error updating profile:", error);
         // Handle error (e.g., show a notification)
       });
       // inavalidate the userData query to refetch the updated data
-    await queryClient.invalidateQueries(["userData"]);
 
   };
 
@@ -203,12 +211,14 @@ const SettingsPage: React.FC = () => {
         icon={<UserCircleIcon className="w-7 h-7 text-skhool-blue-600" />}
       >
         <div className="flex items-center space-x-4 mb-6 p-4 bg-gray-50 rounded-lg">
-          <img
+          <Image
+            width={64}
+            height={64}
             src={
               currentUser?.profilePic ||
               "https://picsum.photos/seed/teacher1/100/100"
             }
-            alt={`${currentUser.firstname}'s avatar`}
+            alt={`${currentUser?.firstname}'s avatar`}
             className="w-16 h-16 rounded-full object-cover shadow-md"
           />
           <div>

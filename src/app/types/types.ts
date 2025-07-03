@@ -1,7 +1,8 @@
 import React from 'react'; // Added to resolve React namespace error
 
 export interface User {
-    name: string;
+    firstname: string;
+    lastname?: string;
     profilePic?: string;
     role: string;
 }
@@ -62,7 +63,7 @@ export interface Student {
     organization?: string; // Optional: if linked to a specific school or organization
 }
 
-export interface StudentForAttendance {
+export interface StudentForAttendance extends Student {
     firstname: string;
     lastname: string; // Unique key for react-spring list animations
     studentId: string; // Unique DB id or internal app id
@@ -91,6 +92,7 @@ export interface StudentPerformanceSummary extends Student {
 }
 
 export interface StudentComprehensiveGrades extends Student {
+    studentName: string; // Full name for display
     performance: {
         [examType: string]: { // e.g., "Mid-Term 1", "Final Exam"
             [subject: string]: SubjectGrade; // e.g., "Maths", "Science"
@@ -162,12 +164,16 @@ export interface SubjectGrade {
 }
 
 export interface StudentPerformanceSummary extends Student {
+  studentName: string; // Full name for display
   key: string; // Unique key for lists/animations
   examGrades: {
     [subject: string]: SubjectGrade; // Key is subject name e.g., "Maths"
   };
-  overallExamPercentage: number; // Overall percentage for that specific exam
-  overallExamGradeLetter: string; // Overall grade for that specific exam
+  overallPercentage: number; // Overall percentage for that specific exam
+  overallGradeLetter: string; // Overall grade for that specific exam
+  totalObtainedMarks: number; // Total marks obtained across all subjects
+  overAllMarks: number; // Total marks across all subjects
+
 }
 
 // Student Specific Types
@@ -196,4 +202,5 @@ export interface Teacher{
     "personalEmail": string;
     "gender": string;
     role?: string; // e.g., "Teacher", "Admin"
+    dateOfJoining: string; // Format: YYYY-MM-DD
 }
