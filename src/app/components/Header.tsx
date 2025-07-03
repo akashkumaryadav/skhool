@@ -10,7 +10,7 @@ import Image from "next/image";
 
 interface HeaderProps {
   toggleSidebar: () => void;
-  currentUser: Record<string, any>;
+  currentUser?: Record<string, any>;
 }
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, currentUser }) => {

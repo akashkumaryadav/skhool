@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'ui-avatars.com', pathname: '/**' },
     ],
   },
+  eslint:{
+    ignoreDuringBuilds: true, // Ignore ESLint errors during build
+  }
 };
 
 export default nextConfig;

@@ -17,7 +17,7 @@ import Link from "next/link";
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
-  role: string; // Optional prop to differentiate between teacher and student views
+  role?: string; // Optional prop to differentiate between teacher and student views
 }
 
 const navigationItems: NavItem[] = [

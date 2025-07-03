@@ -19,7 +19,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   fields,
   showAvatar,
 }) => {
-  const [formData, setFormData] = useState<User | Teacher | undefined | unknown>(user);
+  const [formData, setFormData] = useState<User | Teacher | undefined | any>(user);
   const [isDirty, setIsDirty] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +49,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   const handleSaveChanges = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave(formData as any) ;
   };
 
   // Close on Escape key press

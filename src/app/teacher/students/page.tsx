@@ -277,7 +277,7 @@ const StudentsPage: React.FC = () => {
                           }
                           width={40}
                           height={40}
-                          unoptimized={!!student.profilePic}
+                          // unoptimized={!!student.profilePic as any}
                         />
                       </div>
                       <div className="ml-4">

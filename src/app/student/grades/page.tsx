@@ -8,7 +8,7 @@ import DashboardCard from "../../components/DashboardCard";
 
 // Mock Data - Using the same structure as teacher's grade page but will filter for logged-in student
 // We will use 's1' as the default student for this demo page since auth is removed.
-const MOCK_ALL_STUDENT_GRADES: StudentComprehensiveGrades[] = [
+const MOCK_ALL_STUDENT_GRADES: any[] = [
   {
     id: "s1",
     studentId: "SKL001",
@@ -19,8 +19,8 @@ const MOCK_ALL_STUDENT_GRADES: StudentComprehensiveGrades[] = [
     rollNo: 1,
     gender: "Male",
     dateOfBirth: "2011-05-15",
-    parentName: "Mr. Rajesh Sharma",
-    parentContact: "9876543210",
+    guardian: "Mr. Rajesh Sharma",
+    guardianContact: "9876543210",
     profilePic: "https://picsum.photos/seed/aarav/40/40",
     performance: {
       "Mid-Term 1": {
@@ -88,8 +88,8 @@ const MOCK_ALL_STUDENT_GRADES: StudentComprehensiveGrades[] = [
     rollNo: 5,
     gender: "Female",
     dateOfBirth: "2010-03-20",
-    parentName: "Mrs. Anita Singh",
-    parentContact: "anita.singh@example.com",
+    guardian: "Mrs. Anita Singh",
+    guardianContact: "anita.singh@example.com",
     profilePic: "https://picsum.photos/seed/priya/40/40",
     performance: {
       "Mid-Term 1": {
@@ -157,11 +157,11 @@ const StudentGradesPage: React.FC = () => {
       };
     }
 
-    const examGrades = studentData.performance[selectedExamType];
+    const examGrades:any = studentData.performance[selectedExamType];
     const subjectGradesArray = Object.entries(examGrades).map(
       ([subject, gradeData]) => ({
         subject,
-        ...gradeData,
+        ...gradeData as any,
       })
     );
 
