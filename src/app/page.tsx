@@ -87,7 +87,7 @@ const LandingNavigation: React.FC = () => {
     { name: "How It Works", href: "#how-it-works" },
     {
       name: "Login",
-      href: "http://localhost/api/auth/login?http://localhost/teacher",
+      href: `${process.env.API_URL}/auth/login?redirect=${window.location.origin}/teacher`,
     },
   ];
 

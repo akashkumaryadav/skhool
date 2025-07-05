@@ -18,7 +18,7 @@ import {
 import { Teacher } from "@/app/types/types";
 import EditProfileModal from "@/app/components/EditProfileModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "../../lib/axiosInstance"; // Adjust the path as necessary
 import Image from "next/image";
 
 // Mock current user data (can be fetched from context or API in a real app)
@@ -161,7 +161,7 @@ const SettingsPage: React.FC = () => {
   const { data: currentUser } = useQuery<Teacher>({
     queryKey: ["userData"],
     queryFn: async () => {
-      const response = await axios.get("/api/user/me");
+      const response = await axios.get("/user/me");
       return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -179,15 +179,13 @@ const SettingsPage: React.FC = () => {
       .then((response) => {
         console.log("Profile updated successfully:", response.data);
         // Optionally, you can update the currentUser state here if needed
-         queryClient.invalidateQueries({ queryKey: ["userData"] });
-
+        queryClient.invalidateQueries({ queryKey: ["userData"] });
       })
       .catch((error) => {
         console.error("Error updating profile:", error);
         // Handle error (e.g., show a notification)
       });
-      // inavalidate the userData query to refetch the updated data
-
+    // inavalidate the userData query to refetch the updated data
   };
 
   return (
