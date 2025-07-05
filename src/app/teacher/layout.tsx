@@ -2,7 +2,7 @@
 import Header from "@/app/components/Header";
 import Sidebar from "@/app/components/SideNavigation";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import React, { useCallback, useState } from "react";
 
 interface RootLayoutProps {
@@ -18,12 +18,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const { data: userData } = useQuery({
     queryKey: ["userData"],
     queryFn: async () => {
-      const response = await axios.get("/api/user/me");
+      const response = await axios.get(`/user/me`, {
+        withCredentials: true,
+      });
       return response.data;
     },
     staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    retry: false,
+    refetchOnWindowFocus: true,
+    retry: true,
+    retryDelay: 1000,
   });
 
   return (

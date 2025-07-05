@@ -7,7 +7,7 @@ import {
   StudentPerformanceSummary,
 } from "@/app/types/types";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "../../lib/axiosInstance"; // Adjust the path as necessary
 import Link from "next/link";
 import React, { useMemo, useState } from "react";
 
@@ -26,7 +26,8 @@ const GradesPage: React.FC = () => {
     ],
     queryFn: async () => {
       const response = await axios.get(
-        `/api/grades/summary?studentClass=${selectedClass}&section=${selectedSection}&term=${selectedExamType}`
+        `/grades/summary?studentClass=${selectedClass}&section=${selectedSection}&term=${selectedExamType}`,
+        { withCredentials: true }
       );
       return response.data;
     },

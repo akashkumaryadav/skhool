@@ -19,7 +19,7 @@ import {
   PresentationChartLineIcon,
 } from "@/app/components/icons";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "../lib/axiosInstance"; // Adjust the path as necessary
 import { Teacher } from "../types/types";
 
 const DashboardPage: React.FC = () => {
@@ -27,15 +27,17 @@ const DashboardPage: React.FC = () => {
     queryKey: ["userData"],
   });
   const { data: classData } = useQuery({
-    queryKey: ["classData",userData?.id],
-    queryFn: async () =>{
+    queryKey: ["classData", userData?.id],
+    queryFn: async () => {
       if (!userData?.id) return [];
-      const response = await axios.get(`/api/teacher/${userData.id}/classes`);
+      const response = await axios.get(`/teacher/${userData.id}/classes`, {
+        withCredentials: true,
+      });
       return response.data;
     },
   });
   console.log({ userData, classData });
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
       {/* General Stats Cards */}
@@ -53,7 +55,12 @@ const DashboardPage: React.FC = () => {
         }
       >
         <p className="text-3xl font-bold text-gray-700">{classData?.length}</p>
-        <p className="text-sm text-gray-500">Grades {classData?.map((c: { name: string; section: string; }) => c.name.concat(c.section).concat(" "))}</p>
+        <p className="text-sm text-gray-500">
+          Grades{" "}
+          {classData?.map((c: { name: string; section: string }) =>
+            c.name.concat(c.section).concat(" ")
+          )}
+        </p>
       </DashboardCard>
 
       <div className="md:col-span-2 lg:col-span-1 xl:col-span-2">

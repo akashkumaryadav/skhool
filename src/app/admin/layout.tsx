@@ -5,7 +5,7 @@ import Header from "@/app/components/Header";
 import { APP_NAME } from "@/app/constants"; // Assuming APP_NAME is defined in constants
 import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
 import { useCallback, useState } from "react";
-import axios from "axios";
+import axios from "../lib/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 
 interface RootLayoutProps {
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const { data: userData } = useQuery({
     queryKey: ["userData"],
     queryFn: async () => {
-      const response = await axios.get("/api/user/me");
+      const response = await axios.get("/user/me");
       return response.data;
     },
     staleTime: Infinity,
@@ -43,9 +43,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </Head>
       <body className="bg-base-200 antialiased">
         <div className="flex h-screen bg-base-200 font-sans">
-          <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} role="admin" />
+          <Sidebar
+            isOpen={sidebarOpen}
+            toggleSidebar={toggleSidebar}
+            role="admin"
+          />
           <div className="flex-1 flex flex-col overflow-hidden">
-            <Header toggleSidebar={toggleSidebar} currentUser={userData || {}} />
+            <Header
+              toggleSidebar={toggleSidebar}
+              currentUser={userData || {}}
+            />
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-base-200 p-4 md:p-6 lg:p-8">
               {children}
             </main>

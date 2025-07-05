@@ -11,7 +11,7 @@ import {
   EyeIcon,
 } from "@/app/components/icons"; // Adjusted path
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "../../lib/axiosInstance"; // Adjust the path as necessary
 import Image from "next/image";
 
 const StudentsPage: React.FC = () => {
@@ -33,12 +33,12 @@ const StudentsPage: React.FC = () => {
         condition: "AND",
         operator: "LIKE",
       });
-    //   filters.push({
-    //     field: "fullname",
-    //     value: searchTerm,
-    //     condition: "AND",
-    //     operator: "LIKE",
-    //   });
+      //   filters.push({
+      //     field: "fullname",
+      //     value: searchTerm,
+      //     condition: "AND",
+      //     operator: "LIKE",
+      //   });
     }
     if (selectedClass) {
       filters.push({
@@ -60,16 +60,20 @@ const StudentsPage: React.FC = () => {
   };
 
   const fetchStudents = async (page: number, pageSize: number, filters) => {
-    const response = await axios.post("/api/student/get_students", {
-      pageNumber: page,
-      pageSize: pageSize,
-      filters,
-    });
+    const response = await axios.post(
+      `/student/get_students`,
+      {
+        pageNumber: page,
+        pageSize: pageSize,
+        filters,
+      },
+      { withCredentials: true }
+    );
     return response.data;
   };
   // Using useQuery to fetch students data
   // Adjust the endpoint and parameters as needed
-  const { data, error, isLoading } = useQuery<any>({
+  const { data, isLoading } = useQuery<any>({
     queryKey: [
       "students",
       page,

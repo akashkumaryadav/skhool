@@ -8,7 +8,7 @@ import {
 } from "@/app/components/icons"; // Adjusted path
 import { AttendanceStatus, StudentForAttendance } from "@/app/types/types"; // Adjusted path
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import axios from "../../lib/axiosInstance"; // Adjust the path as necessary
 import Image from "next/image";
 import React, { useEffect, useMemo, useState } from "react";
 import { animated, useTransition } from "react-spring"; // Standard import
@@ -41,7 +41,7 @@ const AttendancePage: React.FC = () => {
     queryKey: ["students", selectedClass, selectedSection, selectedDate],
     queryFn: async () => {
       const response = await axios.get<StudentForAttendance[]>(
-        `/api/teacher/student/get_attendance?className=${selectedClass}&section=${selectedSection}&date=${selectedDate}`
+        `/teacher/student/get_attendance?className=${selectedClass}&section=${selectedSection}&date=${selectedDate}`
       );
       return response.data.map((student) => ({
         ...student,
@@ -53,20 +53,20 @@ const AttendancePage: React.FC = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
-        if (!currentAttendance || currentAttendance.length === 0) {
-            throw new Error("No attendance data to save");
-        }
-        setCurrentAttendance([]); // Clear current attendance after savings
+      if (!currentAttendance || currentAttendance.length === 0) {
+        throw new Error("No attendance data to save");
+      }
+      setCurrentAttendance([]); // Clear current attendance after savings
       const response = await axios.post(
-        `/api/teacher/student/update_attendance?date=${selectedDate}`,
+        `/teacher/student/update_attendance?date=${selectedDate}`,
         currentAttendance
       );
       return response.data;
     },
     onSuccess: (data) => {
       console.log("Attendance saved successfully:", data);
-    //   // Optionally, you can show a success message or reset the form
-    //   setCurrentAttendance([]);
+      //   // Optionally, you can show a success message or reset the form
+      //   setCurrentAttendance([]);
       // invalidate the query to refetch students
       // This will ensure the latest attendance data is fetched
       queryClient.invalidateQueries({
