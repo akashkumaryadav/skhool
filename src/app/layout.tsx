@@ -3,7 +3,7 @@
 import { APP_NAME } from "@/app/constants"; // Assuming APP_NAME is defined in constants
 import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
 import React from "react";
-import "../app/styles/globals.css"; // Import global styles including Tailwind directives
+import "@/styles/globals.css"; // Import global styles including Tailwind directives
 import Providers from "./providers";
 
 // Metadata can be exported statically for Server Components,
