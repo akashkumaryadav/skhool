@@ -26,65 +26,65 @@ const navigationItems: NavItem[] = [
     href: "/teacher/",
     icon: HomeIcon,
     current: true,
-    type: "teacher", // Added type to differentiate
+    role: "teacher", // Added role to differentiate
   },
-  { name: "Students", href: "/teacher/students", icon: UsersIcon , type: "teacher" },
-  { name: "Attendance", href: "/teacher/attendance", icon: CalendarDaysIcon, type: "teacher" },
+  { name: "Students", href: "/teacher/students", icon: UsersIcon , role: "teacher" },
+  { name: "Attendance", href: "/teacher/attendance", icon: CalendarDaysIcon, role: "teacher" },
   {
     name: "Grades/Performance",
     href: "/teacher/grades",
     icon: DocumentChartBarIcon,
-    type: "teacher",
+    role: "teacher",
   },
   {
     name: "Learning Resources",
     href: "/teacher/resources",
     icon: BookOpenIcon,
-    type: "teacher",
+    role: "teacher",
   },
   {
     name: "AI Helper",
     href: "/teacher/ai-helper",
     icon: ChatBubbleLeftRightIcon,
-    type: "teacher",
+    role: "teacher",
   }, // Changed from Sparkles to Chat specific
-  { name: "Settings", href: "/teacher/settings", icon: Cog6ToothIcon , type: "teacher" },
+  { name: "Settings", href: "/teacher/settings", icon: Cog6ToothIcon , role: "teacher" },
 
   {
     name: "Student Dashboard",
     href: "/student/dashboard",
     icon: HomeIcon,
-    type: "student",
+    role: "student",
   },
   {
     name: "My Courses",
     href: "/student/courses",
     icon: AcademicCapIcon,
-    type: "student",
+    role: "student",
   },
   {
     name: "My Grades",
     href: "/student/grades",
     icon: DocumentChartBarIcon,
-    type: "student",
+    role: "student",
   },
   {
     name: "My Attendance",
     href: "/student/attendance",
     icon: CalendarDaysIcon,
-    type: "student",
+    role: "student",
   },
   {
     name: "View Resources",
     href: "/student/resources",
     icon: BookOpenIcon,
-    type: "student",
+    role: "student",
   },
   {
     name: "Student Settings",
     href: "/student/settings",
     icon: Cog6ToothIcon,
-    type: "student",
+    role: "student",
   },
   // for admins
   {
@@ -92,17 +92,17 @@ const navigationItems: NavItem[] = [
     href: "/admin/",
     icon: HomeIcon,
     current: true,
-    type: "admin",
+    role: "admin",
   },
-  { name: "Manage Teachers", href: "/admin/teachers", icon: UsersIcon, type: "admin" },
-  { name: "Manage Students", href: "/admin/students", icon: UsersIcon, type: "admin" },
+  { name: "Manage Teachers", href: "/admin/teachers", icon: UsersIcon, role: "admin" },
+  { name: "Manage Students", href: "/admin/students", icon: UsersIcon, role: "admin" },
   {
     name: "Admin AI Helper",
     href: "/admin/ai-helper",
     icon: ChatBubbleLeftRightIcon,
-    type: "admin",
+    role: "admin",
   }, // Changed from Sparkles to Chat specific
-  { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, type: "admin" },
+  { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, role: "admin" },
 
 ];
 
@@ -143,7 +143,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, role }) => {
 
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           {navigationItems
-            .filter((n) => n.type === role)
+            .filter((n) => n.role === role)
             .map((item) => (
               <Link
                 key={item.name}

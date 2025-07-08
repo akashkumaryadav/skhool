@@ -13,6 +13,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import axios from "../../lib/axiosInstance"; // Adjust the path as necessary
 import Image from "next/image";
+import CustomDrawer from "@/app/components/common/Drawer";
+import { Input, Select } from "antd";
 
 const StudentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +22,7 @@ const StudentsPage: React.FC = () => {
   const [selectedSection, setSelectedSection] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [open, setOpen] = useState(false);
 
   //give type to data
   // Using React Query to fetch students data
@@ -130,7 +133,7 @@ const StudentsPage: React.FC = () => {
         <div className="flex gap-2">
           {}
           <button
-            onClick={() => alert("Add New Student Clicked!")} // Placeholder
+            onClick={() => setOpen(true)} // Placeholder
             className="flex items-center bg-primary hover:bg-skhool-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-skhool-blue-500 focus:ring-opacity-75"
           >
             <PlusCircleIcon className="w-5 h-5 mr-2" />
@@ -344,6 +347,109 @@ const StudentsPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+      <CustomDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        enableHeader
+        header="Add Student"
+        enableFooter
+        children={
+          <div className="">
+            <form>
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="firstname"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    First Name
+                  </label>
+                  <Input
+                    
+                    type="text"
+                    id="firstname"
+                    name="firstname"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
+                    placeholder="Enter first name"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastname"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Last Name
+                  </label>
+                  <Input
+                    type="text"
+                    id="lastname"
+                    name="lastname"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
+                    placeholder="Enter last name"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="className"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Class
+                  </label>
+                  <Select
+                    id="className"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
+                    options={uniqueClasses.map((c) => ({
+                      label: c,
+                      value: c,
+                    }))}
+                    value={selectedClass}
+                    onChange={(value) => setSelectedClass(value)}
+                    placeholder="Select class"
+                    style={{ width: "100%" }}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="section"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Section
+                  </label>
+                  <Select
+                    id="section"
+                    options={uniqueSections.map((s) => ({
+                      label: s,
+                      value: s,
+                    }))}
+                    value={selectedSection}
+                    onChange={(value) => setSelectedSection(value)}
+                    placeholder="Select section"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
+                   />
+                </div>
+              </div>
+            </form>
+          </div>
+        }
+        actions={[
+          
+          {
+            label: "Cancel",
+            onClick: () => setOpen(false),
+            variant: "outlined",
+            className: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+          },
+          {
+            label: "Save",
+            onClick: () => {
+              alert("Save Student Clicked!"); // Placeholder
+              setOpen(false);
+            },
+            variant: "filled",
+            className: "bg-blue-600 text-white hover:bg-blue-700",
+          },
+        ]}
+      />
     </div>
   );
 };

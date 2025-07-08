@@ -20,7 +20,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // queryFn: defaultQueryFn,
+        queryFn: defaultQueryFn,
         refetchOnWindowFocus: false,
         retry: 1,
       },

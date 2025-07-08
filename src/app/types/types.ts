@@ -24,7 +24,7 @@ export interface NavItem {
     href: string;
     icon: React.ElementType; // For SVG components
     current?: boolean; // This will be set dynamically in Sidebar.tsx
-    type?: 'teacher' | 'student' | 'admin'; // Optional type to differentiate between teacher and student views
+    role?: 'teacher' | 'student' | 'admin'; // Optional type to differentiate between teacher and student views
 }
 
 export enum AttendanceStatus {

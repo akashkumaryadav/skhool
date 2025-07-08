@@ -6,47 +6,41 @@ import { Teacher } from "../../types/types";
 import { PlusCircleIcon, PencilIcon, TrashIcon } from "../../constants";
 import TeacherFormModal from "../../components/TeacherFormModal";
 import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
-
-const mockTeachers: Partial<Teacher>[] = [
-  {
-    id: 1,
-    firstname: "Anjali",
-    lastname: "Sharma",
-    profilePic: "https://picsum.photos/seed/teacher1/40/40",
-    qualification: "M.Sc. in Physics, B.Ed.",
-    dateOfJoining: "2018-07-15",
-    contact: "9876543210",
-    personalEmail: "a.sharma@skhool.co.in",
-  },
-  {
-    id: 2,
-    firstname: "Rajesh",
-    lastname: "Gupta",
-    profilePic: "https://picsum.photos/seed/teacher2/40/40",
-    qualification: "M.A. in English, B.Ed.",
-    dateOfJoining: "2020-03-01",
-    contact: "9988776655",
-    personalEmail: "r.gupta@skhool.co.in",
-  },
-  {
-    id: 3,
-    firstname: "Sunita",
-    lastname: "Menon",
-    profilePic: "https://picsum.photos/seed/teacher3/40/40",
-    qualification: "M.Sc. in Chemistry",
-    dateOfJoining: "2015-08-21",
-    contact: "9123456789",
-    personalEmail: "s.menon@skhool.co.in",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import axios from "@/app/lib/axiosInstance";
 
 const AdminTeachersPage: React.FC = () => {
-  const [teachers, setTeachers] = useState<Partial<Teacher>[]>(mockTeachers);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] =
     useState<Partial<Teacher> | null>(null);
 
+  const {
+    data: { teachers = [] },
+    loading,
+  } = useQuery<{
+    totalPage: number;
+    totalElements: number;
+    teachers: Array<Teacher>;
+  }>({
+    queryKey: ["teachers"],
+    queryFn: async () => {
+      return axios
+        .post("/admin/teachers/", {
+          page: 0,
+          pageSize: 100,
+        })
+        .then((res) => res.data);
+    },
+    staleTime: 1000 * 60 * 1, // 1 minutes
+    refetchOnWindowFocus: true,
+    retry: 3,
+    retryDelay: 1000,
+    refetchOnReconnect: true,
+    refetchOnMount: true,
+  });
+  console.log("Teachers data:", teachers);
+  
   const handleOpenAddModal = () => {
     setSelectedTeacher(null);
     setIsFormModalOpen(true);
@@ -69,25 +63,16 @@ const AdminTeachersPage: React.FC = () => {
   };
 
   const handleSaveTeacher = (teacherData: Partial<Teacher>) => {
-    if (selectedTeacher) {
-      // Editing
-      setTeachers(
-        teachers.map((t) => (t.id === teacherData.id ? teacherData : t))
-      );
-    } else {
-      // Adding
-      setTeachers([teacherData, ...teachers]);
-    }
     handleCloseModals();
     console.log("Saved teacher:", teacherData);
   };
 
   const handleDeleteTeacher = () => {
-    if (selectedTeacher) {
-      setTeachers(teachers.filter((t) => t.id !== selectedTeacher.id));
-      handleCloseModals();
-      console.log("Deleted teacher:", selectedTeacher);
-    }
+    // if (selectedTeacher) {
+    //   setTeachers(teachers.filter((t) => t.id !== selectedTeacher.id));
+    //   handleCloseModals();
+    //   console.log("Deleted teacher:", selectedTeacher);
+    // }
   };
 
   return (

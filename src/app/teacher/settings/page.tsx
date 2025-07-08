@@ -175,7 +175,7 @@ const SettingsPage: React.FC = () => {
     // Here you would typically send the updated data to your API
     setOpenEditDialog(false); // Close the dialog after saving
     await axios
-      .put(`/api/teacher/${currentUser?.id}`, updatedData)
+      .put(`/teacher/${currentUser?.id}`, updatedData)
       .then((response) => {
         console.log("Profile updated successfully:", response.data);
         // Optionally, you can update the currentUser state here if needed
