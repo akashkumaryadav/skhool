@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.8.0",
+    "@google/generative-ai": "^0.24.1",
     "@heroicons/react": "^2.2.0",
     "@next/env": "^15.3.3",
     "@react-spring/web": "^10.0.1",
