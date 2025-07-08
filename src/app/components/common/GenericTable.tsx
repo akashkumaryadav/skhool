@@ -1,0 +1,530 @@
+// components/ui/GenericDataTable.tsx
+"use client";
+
+import { AnimatePresence, motion } from "framer-motion";
+import {
+    ArrowUpDown,
+    ChevronLeft,
+    ChevronRight,
+    Columns,
+    Download,
+    GripVertical,
+    Search,
+    X
+} from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+// --- TYPE DEFINITIONS ---
+export interface ColumnDef<T> {
+  accessorKey: keyof T;
+  header: string;
+  cell?: (row: T) => React.ReactNode;
+  isFilterable?: boolean; // Can this column be used in filters?
+  filterOptions?: string[]; // Pre-defined options for filter dropdown
+}
+
+interface GenericDataTableProps<T> {
+  title: string;
+  data: T[];
+  columns: ColumnDef<T>[];
+  ctaButton: {
+    text: string;
+    onClick: () => void;
+  };
+}
+
+// --- SUB-COMPONENTS ---
+
+// 1. Manage Columns Modal
+function ManageColumnsModal<T>({
+  isOpen,
+  onClose,
+  allColumns,
+  visibleColumns,
+  onSave,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  allColumns: ColumnDef<T>[];
+  visibleColumns: (keyof T)[];
+  onSave: (newVisibleColumns: (keyof T)[]) => void;
+}) {
+  const [tempVisible, setTempVisible] = useState(new Set(visibleColumns));
+  const [orderedColumns, setOrderedColumns] = useState(visibleColumns);
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+
+  useEffect(() => {
+    // When modal opens, sync state
+    if (isOpen) {
+      setTempVisible(new Set(visibleColumns));
+      setOrderedColumns(visibleColumns);
+    }
+  }, [isOpen, visibleColumns]);
+
+  const handleToggleColumn = (accessorKey: keyof T) => {
+    const newSet = new Set(tempVisible);
+    if (newSet.has(accessorKey)) {
+      newSet.delete(accessorKey);
+    } else {
+      newSet.add(accessorKey);
+    }
+    setTempVisible(newSet);
+
+    // Update ordered list as well
+    const newOrdered = allColumns
+      .map((c) => c.accessorKey)
+      .filter((key) => newSet.has(key));
+    setOrderedColumns(newOrdered);
+  };
+
+  const handleDragSort = () => {
+    if (dragItem.current === null || dragOverItem.current === null) return;
+    const newOrderedColumns = [...orderedColumns];
+    const draggedItemContent = newOrderedColumns.splice(dragItem.current, 1)[0];
+    newOrderedColumns.splice(dragOverItem.current, 0, draggedItemContent);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setOrderedColumns(newOrderedColumns);
+  };
+
+  const handleSave = () => {
+    onSave(orderedColumns);
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 20 }}
+            className="bg-white rounded-xl shadow-2xl w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b">
+              <h3 className="text-lg font-bold text-gray-800">
+                Manage Columns
+              </h3>
+              <p className="text-sm text-gray-500">
+                Select the columns you&apos;d like to see on this dashboard.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 p-6 gap-6">
+              {/* Column Options */}
+              <div>
+                <h4 className="font-semibold mb-2">Column Options</h4>
+                <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
+                  {allColumns.map((col) => (
+                    <label
+                      key={String(col.accessorKey)}
+                      className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-100"
+                    >
+                      <input
+                        type="checkbox"
+                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                        checked={tempVisible.has(col.accessorKey)}
+                        onChange={() => handleToggleColumn(col.accessorKey)}
+                      />
+                      <span>{col.header}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {/* Selected Columns */}
+              <div>
+                <h4 className="font-semibold mb-2">
+                  Selected Column ({orderedColumns.length})
+                </h4>
+                <div className="space-y-2 max-h-80 overflow-y-auto border rounded-lg p-2">
+                  {orderedColumns.map((key, index) => (
+                    <div
+                      key={String(key)}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-md cursor-grab"
+                      draggable
+                      onDragStart={() => (dragItem.current = index)}
+                      onDragEnter={() => (dragOverItem.current = index)}
+                      onDragEnd={handleDragSort}
+                      onDragOver={(e) => e.preventDefault()}
+                    >
+                      <div className="flex items-center gap-2">
+                        <GripVertical size={16} className="text-gray-400" />
+                        <span>
+                          {
+                            allColumns.find((c) => c.accessorKey === key)
+                              ?.header
+                          }
+                        </span>
+                      </div>
+                      <X
+                        size={16}
+                        className="text-gray-400 cursor-pointer hover:text-red-500"
+                        onClick={() => handleToggleColumn(key)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 flex justify-end gap-3 rounded-b-xl">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg hover:bg-orange-700"
+              >
+                Save
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// 2. Pagination Controls
+function PaginationControls({
+  currentPage,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  onItemsPerPageChange,
+}: {
+  currentPage: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (size: number) => void;
+}) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  return (
+    <div className="flex flex-col md:flex-row items-center justify-between pt-4 text-sm text-gray-600">
+      <p>
+        Showing{" "}
+        <span className="font-semibold">
+          {startItem}-{endItem}
+        </span>{" "}
+        of <span className="font-semibold">{totalItems}</span> results
+      </p>
+      <div className="flex items-center gap-4 mt-4 md:mt-0">
+        <div className="flex items-center gap-2">
+          <span>Rows per page:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+            className="border-gray-300 rounded-md text-sm"
+          >
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-1 disabled:opacity-50"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-1 disabled:opacity-50"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- MAIN COMPONENT ---
+export function GenericDataTable<T extends { id: string | number }>({
+  title,
+  data,
+  columns: allColumns, // Rename prop for clarity
+  ctaButton,
+}: GenericDataTableProps<T>) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(
+    new Set()
+  );
+
+  // State for new features
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [visibleColumnKeys, setVisibleColumnKeys] = useState<(keyof T)[]>(() =>
+    allColumns.map((c) => c.accessorKey)
+  );
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>(
+    {}
+  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const filterableColumns = useMemo(
+    () => allColumns.filter((c) => c.isFilterable),
+    [allColumns]
+  );
+
+  // Derived state for visible columns based on user selection
+  const visibleColumns = useMemo(
+    () =>
+      visibleColumnKeys
+        .map((key) => allColumns.find((c) => c.accessorKey === key))
+        .filter(Boolean) as ColumnDef<T>[],
+    [visibleColumnKeys, allColumns]
+  );
+
+  // Advanced filtering logic
+  const filteredData = useMemo(() => {
+    let filtered = data;
+
+    // 1. Filter by active filter dropdowns
+    Object.entries(activeFilters).forEach(([key, value]) => {
+      if (value) {
+        filtered = filtered.filter(
+          (item) => String(item[key as keyof T]) === value
+        );
+      }
+    });
+
+    // 2. Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter((item) =>
+        Object.values(item).some((val) =>
+          String(val).toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+
+    return filtered;
+  }, [data, searchTerm, activeFilters]);
+
+  // Slicing for pagination
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredData.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredData, currentPage, itemsPerPage]);
+
+  const handleSelectRow = (id: string | number) => {
+    /* ... (no change) ... */
+  };
+  const handleSelectAll = () => {
+    /* ... (no change) ... */
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setActiveFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const removeFilter = (key: string) => {
+    setActiveFilters((prev) => {
+      const newFilters = { ...prev };
+      delete newFilters[key];
+      return newFilters;
+    });
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (size: number) => {
+    setItemsPerPage(size);
+    setCurrentPage(1);
+  };
+
+  return (
+    <>
+      <ManageColumnsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        allColumns={allColumns}
+        visibleColumns={visibleColumnKeys}
+        onSave={setVisibleColumnKeys}
+      />
+      <div className="bg-white p-6 rounded-2xl shadow-sm w-full">
+        {/* ... Header Section (no change) ... */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+            {title}
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-2"
+            >
+              <Columns size={16} /> Manage Columns
+            </button>
+            <button className="px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 flex items-center gap-2">
+              <Download size={16} /> Export
+            </button>
+            <button
+              onClick={ctaButton.onClick}
+              className="px-4 py-2 text-sm font-semibold text-white bg-orange-600 rounded-lg shadow-sm hover:bg-orange-700"
+            >
+              {ctaButton.text}
+            </button>
+          </div>
+        </div>
+
+        {/* Filter and Search Section */}
+        <div className="mb-4 space-y-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="relative w-full md:w-1/3">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            {/* Atlassian-style Filter Dropdowns */}
+            {filterableColumns.map((col) => (
+              <select
+                key={String(col.accessorKey)}
+                onChange={(e) =>
+                  handleFilterChange(String(col.accessorKey), e.target.value)
+                }
+                className="w-full md:w-auto px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value="">{col.header}</option>
+                {col.filterOptions?.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            ))}
+          </div>
+          {/* Active Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2">
+            {Object.entries(activeFilters).map(
+              ([key, value]) =>
+                value && (
+                  <div
+                    key={key}
+                    className="flex items-center gap-1 bg-orange-100 text-orange-800 text-xs font-semibold px-2 py-1 rounded-full"
+                  >
+                    <span>
+                      {
+                        allColumns.find((c) => String(c.accessorKey) === key)
+                          ?.header
+                      }
+                      : {value}
+                    </span>
+                    <X
+                      size={14}
+                      className="cursor-pointer"
+                      onClick={() => removeFilter(key)}
+                    />
+                  </div>
+                )
+            )}
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="overflow-x-auto  max-h-[50dvh] overflow-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+              <tr>
+                <th className="p-3 w-10">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                    checked={
+                      selectedRows.size === paginatedData.length &&
+                      paginatedData.length > 0
+                    }
+                    onChange={() => {
+                      if (selectedRows.size === paginatedData.length) {
+                        setSelectedRows(new Set());
+                      } else {
+                        setSelectedRows(
+                          new Set(paginatedData.map((r) => r.id))
+                        );
+                      }
+                    }}
+                  />
+                </th>
+                {visibleColumns.map((col) => (
+                  <th
+                    key={String(col.accessorKey)}
+                    className="p-3 font-semibold"
+                  >
+                    <div className="flex items-center gap-1">
+                      {col.header}
+                      <ArrowUpDown size={14} />
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {paginatedData.map((row) => (
+                <tr key={row.id} className="hover:bg-gray-50">
+                  <td className="p-3">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                      checked={selectedRows.has(row.id)}
+                      onChange={() => {
+                        const newSet = new Set(selectedRows);
+                        if (newSet.has(row.id)) {
+                          newSet.delete(row.id);
+                        } else {
+                          newSet.add(row.id);
+                        }
+
+                        setSelectedRows(newSet);
+                      }}
+                    />
+                  </td>
+                  {visibleColumns.map((col) => (
+                    <td key={String(col.accessorKey)} className="p-3 align-top">
+                      {col.cell ? col.cell(row) : String(row[col.accessorKey])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer / Pagination Section */}
+        <PaginationControls
+          currentPage={currentPage}
+          totalItems={filteredData.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
+      </div>
+    </>
+  );
+}

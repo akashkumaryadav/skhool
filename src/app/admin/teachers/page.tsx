@@ -17,7 +17,7 @@ const AdminTeachersPage: React.FC = () => {
 
   const {
     data: { teachers = [] },
-    loading,
+    isLoading,
   } = useQuery<{
     totalPage: number;
     totalElements: number;

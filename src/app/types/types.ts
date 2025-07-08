@@ -24,6 +24,7 @@ export interface NavItem {
     href: string;
     icon: React.ElementType; // For SVG components
     current?: boolean; // This will be set dynamically in Sidebar.tsx
+    notificationCount?: number,
     role?: 'teacher' | 'student' | 'admin'; // Optional type to differentiate between teacher and student views
 }
 
@@ -61,6 +62,7 @@ export interface Student {
     address?: string; // Optional: home address for contact
     extraCurricular?: string[]; // Optional: list of extracurricular activities
     organization?: string; // Optional: if linked to a specific school or organization
+    feesPaid?: "Paid" | "Pending" | "InProcess" | "Failed"; // Optional: whether school fees are paid
 }
 
 export interface StudentForAttendance extends Student {
