@@ -210,3 +210,124 @@ export interface Teacher{
     dateOfJoining: string; // Format: YYYY-MM-DD
     roles?:string;
 }
+
+// Exam Management Types
+export interface Exam {
+    id: string;
+    name: string;
+    description?: string;
+    subject: string;
+    className: string;
+    section: string;
+    totalMarks: number;
+    passingMarks: number;
+    examDate: string; // Format: YYYY-MM-DD
+    duration: number; // Duration in minutes
+    examType: ExamType;
+    status: ExamStatus;
+    createdBy: string; // Teacher ID
+    createdAt: string;
+    updatedAt: string;
+}
+
+export enum ExamType {
+    UNIT_TEST = "Unit Test",
+    MID_TERM = "Mid Term",
+    FINAL_EXAM = "Final Exam",
+    QUARTERLY = "Quarterly",
+    HALF_YEARLY = "Half Yearly",
+    ANNUAL = "Annual",
+    ASSIGNMENT = "Assignment",
+    PROJECT = "Project"
+}
+
+export enum ExamStatus {
+    SCHEDULED = "Scheduled",
+    ONGOING = "Ongoing", 
+    COMPLETED = "Completed",
+    CANCELLED = "Cancelled"
+}
+
+export interface ExamResult {
+    id: string;
+    examId: string;
+    studentId: string;
+    marksObtained: number;
+    grade?: string;
+    percentage: number;
+    remarks?: string;
+    submittedAt?: string;
+    gradedAt?: string;
+    gradedBy?: string; // Teacher ID
+}
+
+export interface ExamAnalytics {
+    examId: string;
+    totalStudents: number;
+    studentsAppeared: number;
+    averageMarks: number;
+    highestMarks: number;
+    lowestMarks: number;
+    passPercentage: number;
+    gradeDistribution: {
+        [grade: string]: number;
+    };
+    classAverage: number;
+    subjectAverage: number;
+}
+
+export interface BulkUploadResult {
+    success: number;
+    failed: number;
+    errors: Array<{
+        row: number;
+        studentId: string;
+        error: string;
+    }>;
+}
+
+export interface ExamReport {
+    exam: Exam;
+    results: ExamResult[];
+    analytics: ExamAnalytics;
+    studentDetails: Student[];
+}
+
+// Report Template Types
+export interface ReportTemplate {
+    id: string;
+    name: string;
+    description?: string;
+    templateType: 'student_report' | 'class_report' | 'exam_summary';
+    templateContent: string; // HTML template with placeholders
+    variables: TemplateVariable[];
+    isDefault: boolean;
+    createdBy: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface TemplateVariable {
+    key: string;
+    label: string;
+    type: 'text' | 'number' | 'date' | 'boolean' | 'image';
+    required: boolean;
+    defaultValue?: string;
+}
+
+export interface StudentReport {
+    id: string;
+    examId: string;
+    studentId: string;
+    templateId: string;
+    reportData: Record<string, any>;
+    generatedAt: string;
+    generatedBy: string;
+}
+
+export interface ReportGenerationRequest {
+    examId: string;
+    studentIds: string[];
+    templateId: string;
+    customData?: Record<string, any>;
+}

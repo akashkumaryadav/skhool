@@ -8,6 +8,8 @@ import {
     BookA,
     Cog,
     Bot,
+    FileText,
+    BarChart3,
   } from 'lucide-react';
   import type { LucideIcon } from 'lucide-react';
 import { SiteRoute } from '../components/commandPallete/CommandPallete';
@@ -43,6 +45,8 @@ import { SiteRoute } from '../components/commandPallete/CommandPallete';
     { name: "Admin Dashboard", href: "/admin/", icon: LayoutDashboard, current: true, role: "admin" },
     { name: "Manage Teachers", href: "/admin/teachers", icon: Users, role: "admin" },
     { name: "Manage Students", href: "/admin/students", icon: Users, role: "admin" },
+    { name: "Exam Management", href: "/admin/exams", icon: FileText, role: "admin" },
+    { name: "Exam Analytics", href: "/admin/exams/dashboard", icon: BarChart3, role: "admin" },
     { name: "Schedule Management", href: "/admin/manage/schedule", icon: Users, role: "admin" },
   ];
   

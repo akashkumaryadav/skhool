@@ -6,6 +6,7 @@ import { AdminDasboardRightPanel } from "../components/AdminDashboardRightPanel"
 import { AttendanceCard } from "../components/common/AttendanceCard";
 import { StatCard } from "../components/common/StatCard";
 import { StudentDirectory } from "../components/StudentDirectory";
+import { ExamDashboardWidget } from "../components/exams/ExamDashboardWidget";
 import axios from "../lib/axiosInstance"; // Adjust the path as necessary
 import { Teacher, User } from "../types/types";
 import AddStudent from "../components/AddStudent";
@@ -118,14 +119,9 @@ const DashboardPage: React.FC = () => {
           {/* Student Directory */}
           <StudentDirectory />
 
-          {/* Fees Collection Chart (Placeholder) */}
+          {/* Exam Management Widget */}
           <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="font-bold text-gray-800 text-lg">Fees Collection</h3>
-            <p className="text-gray-500 mt-2">
-              A beautiful bar chart component animated with react-spring would
-              go here.
-            </p>
-            {/* You would place the <FeesCollectionChart /> here */}
+            <ExamDashboardWidget />
           </div>
         </div>
 

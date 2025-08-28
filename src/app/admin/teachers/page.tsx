@@ -32,15 +32,15 @@ const AdminTeachersPage: React.FC = () => {
         })
         .then((res) => res.data);
     },
-    staleTime: 1000 * 60 * 1, // 1 minutes
     refetchOnWindowFocus: true,
     retry: 3,
     retryDelay: 1000,
     refetchOnReconnect: true,
     refetchOnMount: true,
+    initialData: { totalPage: 0, totalElements: 0, teachers: [] },
   });
   console.log("Teachers data:", teachers);
-  
+
   const handleOpenAddModal = () => {
     setSelectedTeacher(null);
     setIsFormModalOpen(true);

@@ -1,17 +1,7 @@
 // components/MarketingSidebar.tsx
 "use client";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  BookA,
-  BookCopy,
-  Bot,
-  CalendarCheck2,
-  ChartBarIncreasing,
-  Cog,
-  LayoutDashboard,
-  MoreHorizontal,
-  Users,
-} from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { NavItem as NavItemType, Teacher } from "../types/types";
@@ -87,8 +77,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const currentUser = queryClient.getQueryData<Teacher>(["currentUser"]);
   const isDark = mode === "dark";
-
-  console.log({ currentUser });
 
   const containerClasses = `flex flex-col hidden sm:hidden md:flex h-full transition-width duration-300 ${
     isDark ? "bg-blue-800 text-white" : "bg-white text-gray-800"
