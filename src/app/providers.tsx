@@ -44,7 +44,7 @@ export function Init({ children }: { children: ReactNode }) {
       const response = await axiosInstance.get("/user/me");
       if (response.data) {
         // seperate the "ROLE_teacher" Role and teacher
-        const role = response.data.role.split("_")?.[1] || "";
+        const role = response.data.role?.split("_")?.[1] || response.data.roles || "";
         return {
           ...(response?.data || {}),
           role,

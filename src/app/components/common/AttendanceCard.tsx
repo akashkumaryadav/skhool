@@ -9,12 +9,16 @@ interface AttendanceCardProps {
   present: number;
   absent: number;
   color: string; // e.g., 'text-orange-500', 'bg-orange-500'
+  late?:number;
+  notMarked?:number;
 }
 
 export const AttendanceCard: React.FC<AttendanceCardProps> = ({
   title,
   present,
   absent,
+  late,
+  notMarked,
   color,
 }) => {
   const total = present + absent;

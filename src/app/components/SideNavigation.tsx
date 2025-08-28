@@ -16,109 +16,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { NavItem as NavItemType, Teacher } from "../types/types";
 import { usePathname } from "next/navigation";
+import { accountNavItems, mainNavItems } from "../lib/navigationRoutes";
 
-const mainNavItems: NavItemType[] = [
-  {
-    name: "Dashboard",
-    href: "/teacher",
-    icon: LayoutDashboard,
-    current: true,
-    role: "teacher", // Added role to differentiate
-  },
-  { name: "Students", href: "/teacher/students", icon: Users, role: "teacher" },
-  {
-    name: "Attendance",
-    href: "/teacher/attendance",
-    icon: CalendarCheck2,
-    role: "teacher",
-  },
-  {
-    name: "Grades/Performance",
-    href: "/teacher/grades",
-    icon: ChartBarIncreasing,
-    role: "teacher",
-  },
-  {
-    name: "Learning Resources",
-    href: "/teacher/resources",
-    icon: BookCopy,
-    role: "teacher",
-  },
-
-  {
-    name: "Student Dashboard",
-    href: "/student/dashboard",
-    icon: LayoutDashboard,
-    role: "student",
-  },
-  {
-    name: "My Courses",
-    href: "/student/courses",
-    icon: BookA,
-    role: "student",
-  },
-  {
-    name: "My Grades",
-    href: "/student/grades",
-    icon: ChartBarIncreasing,
-    role: "student",
-  },
-  {
-    name: "My Attendance",
-    href: "/student/attendance",
-    icon: CalendarCheck2,
-    role: "student",
-  },
-  {
-    name: "View Resources",
-    href: "/student/resources",
-    icon: BookA,
-    role: "student",
-  },
-  {
-    name: "Student Settings",
-    href: "/student/settings",
-    icon: Cog,
-    role: "student",
-  },
-  // for admins
-  {
-    name: "Admin Dashboard",
-    href: "/admin/",
-    icon: LayoutDashboard,
-    current: true,
-    role: "admin",
-  },
-  {
-    name: "Manage Teachers",
-    href: "/admin/teachers",
-    icon: Users,
-    role: "admin",
-  },
-  {
-    name: "Manage Students",
-    href: "/admin/students",
-    icon: Users,
-    role: "admin",
-  },
-];
-
-const accountNavItems: NavItemType[] = [
-  {
-    name: "AI Helper",
-    href: "/teacher/ai-helper",
-    icon: Bot,
-    role: "teacher",
-  }, // Changed from Sparkles to Chat specific
-  { name: "Settings", href: "/teacher/settings", icon: Cog, role: "teacher" },
-  {
-    name: "Admin AI Helper",
-    href: "/admin/ai-helper",
-    icon: Bot,
-    role: "admin",
-  }, // Changed from Sparkles to Chat specific
-  { name: "Settings", href: "/admin/settings", icon: Cog, role: "admin" },
-];
 // Define prop types
 interface SidebarProps {
   mode?: "light" | "dark";
@@ -189,6 +88,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const currentUser = queryClient.getQueryData<Teacher>(["currentUser"]);
   const isDark = mode === "dark";
 
+  console.log({ currentUser });
+
   const containerClasses = `flex flex-col hidden sm:hidden md:flex h-full transition-width duration-300 ${
     isDark ? "bg-blue-800 text-white" : "bg-white text-gray-800"
   } ${collapsed ? "w-20" : "w-72"} shadow-lg`;
@@ -244,7 +145,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         <nav className="space-y-2">
           {mainNavItems.map(
             (item) =>
-              currentUser?.role === item?.role && (
+              (currentUser?.role === item?.role ||
+                currentUser?.roles === item?.role) && (
                 <NavItem
                   key={item.name}
                   {...item}
@@ -269,7 +171,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         <nav className="space-y-2">
           {accountNavItems.map(
             (item) =>
-              currentUser?.role === item?.role && (
+              (currentUser?.role === item?.role ||
+                currentUser?.roles === item?.roles) && (
                 <NavItem
                   key={item.name}
                   {...item}

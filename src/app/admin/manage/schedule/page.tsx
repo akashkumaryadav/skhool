@@ -9,6 +9,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { TimePicker } from "antd";
 import dayjs from "dayjs";
 import { GoogleGenAI } from "@google/genai";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/app/lib/axiosInstance";
 
 const SchedulePage: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState("Class 9A");
@@ -75,13 +77,6 @@ const SchedulePage: React.FC = () => {
     },
   ]);
 
-  const [subjects, setSubjects] = useState([
-    "Mathematics",
-    "Biology",
-    "Physics",
-    "Indonesian",
-    "Art and Culture",
-  ]);
   const [weightages, setWeightages] = useState([3, 2, 2, 1, 1]);
   const [timeSlots, setTimeSlots] = useState([
     { startTime: "09:00", endTime: "10:00" },
@@ -94,17 +89,19 @@ const SchedulePage: React.FC = () => {
 
   const [isGenerating, setIsGenerating] = useState(false); // Added state for loader.
 
-  const classOptions = ["Class 9A", "Class 9B"];
-  const subjectOptions = [
-    "Mathematics",
-    "Biology",
-    "Physics",
-    "Indonesian",
-    "Art and Culture",
-    "Religion",
-    "Crafts",
-    "Rest",
-  ];
+  const { data: subjectData } = useQuery({
+    queryKey: ["subjects"],
+    queryFn: async () => (await axiosInstance.get("/subject/")).data,
+    placeholderData: [],
+  });
+  const { data: classData } = useQuery({
+    queryKey: ["classes"],
+    queryFn: async () => (await axiosInstance.get("/class/")).data,
+    placeholderData:[]
+  });
+  const subjects = subjectData?.map((s) => s.name);
+  const classOptions = classData?.map((c)=>new Array(Number(c.sections)).fill(0).map((_c,i)=>`Class ${c.name}${String.fromCharCode(65 + i)}`)).flatmap()
+  const subjectOptions = subjects;
 
   const subjectColors: Record<string, string> = {
     Mathematics: "bg-blue-100 text-blue-800",
@@ -162,7 +159,7 @@ const SchedulePage: React.FC = () => {
       model: "gemini-2.5-flash-preview-04-17",
       config: {
         systemInstruction: `You are Skhool AI, a specialized assistant for generating school schedules.
-        
+
         STRICT OUTPUT FORMAT RULES:
         1. Return ONLY valid JSON, no markdown, no explanation
         2. JSON structure must be:
@@ -177,7 +174,8 @@ const SchedulePage: React.FC = () => {
                     "startTime": "HH:mm",
                     "endTime": "HH:mm"
                   },
-                  "subject": "string (from provided subject list only)"
+                  "subject": "string (from provided subject list only)",
+                  "teacher:string (from provided subject list)
                 }
               ]
             }
@@ -189,7 +187,16 @@ const SchedulePage: React.FC = () => {
         2. No more than 2 consecutive periods of the same subject
         3. Respect subject weightages for frequency
         4. Use only provided subject names exactly as given
-        5. Each time slot must match the provided time slots exactly`,
+        5. Each time slot must match the provided time slots exactly
+        6. Use exactly one subject per time slot.
+7. Subjects with higher weekly frequency must appear more often.
+8. Teachers must not be double-booked at the same time.
+9. Ensure at least one free period/day for each teacher.
+10. Avoid assigning the same subject more than once a day unless necessary.
+11. Balance teacher load across the week.
+12. Include subject name for each time range.
+13. Do not assign classes to a teacher back to back in same class
+        `,
       },
     });
   };
@@ -297,10 +304,10 @@ const SchedulePage: React.FC = () => {
       // Enhanced prompt with more specific constraints
       const response = await chatSession.sendMessage({
         message: `Generate a school schedule following these STRICT requirements:
-        
+
         Available subjects: ${JSON.stringify(subjects)}
         Time slots: ${JSON.stringify(timeSlots)}
-        
+
         Critical rules to follow:
         1. Use ONLY these exact subject names: ${subjects.join(", ")}
         2. Every day MUST have "Rest" period at ${
@@ -318,7 +325,7 @@ const SchedulePage: React.FC = () => {
         6. Ensure even distribution of subjects across the week
         7. Consider teacher availability (no parallel classes of the same subject)
         8. Physical activities and lab work should preferably be in morning slots
-        
+
         Example of VALID period format:
         {
           "timeSlot": {

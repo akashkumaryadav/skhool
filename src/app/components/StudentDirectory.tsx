@@ -1,137 +1,154 @@
 // components/dashboard/StudentDirectory.tsx
-import { MoreHorizontal, Pencil } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Student } from "../types/types";
+import {
+  ColumnDef,
+  FilterCondition,
+  GenericDataTable,
+} from "./common/GenericTable";
+import { useQuery } from "@tanstack/react-query";
+import { translateAiFiltersToApiFilters } from "../lib/utils";
+import axiosInstance from "../lib/axiosInstance";
 
-// Define some mock data
-const students: Student[] = [
-    {
-        firstname: "Arun",
-        lastname: "Kumar",
-        bio: "A diligent student with a keen interest in science.",
-        className: "10th",
-        section: "A",
-        dateOfBirth: "2008-05-15",
-        gender: "Male",
-        guardian: "Ravi Kumar",
-        guardianContact: "9876543210",
-        address: "123 Main St, Chennai",
-        id: "1",
-        rollNo: 101,
-        stream: "Science",
-        studentId: "STU001",
-        attendancePercentage: 95,
-        extraCurricular: ["Football", "Science Club"],
-        organization: "ABC High School",
-        organizationEmail: "abc@highschool.in",
-        overallGrade: "A",
-        feesPaid: "Paid",
-    },
-    {
-        firstname: "Meera",
-        lastname: "Sharma",
-        bio: "An enthusiastic learner with a passion for arts.",
-        className: "9th",
-        section: "B",
-        dateOfBirth: "2009-08-22",
-        gender: "Female",
-        guardian: "Suresh Sharma",
-        guardianContact: "9876543211",
-        address: "456 Elm St, Mumbai",
-        id: "2",
-        rollNo: 102,
-        stream: "Arts",
-        studentId: "STU002",
-        attendancePercentage: 92,
-        extraCurricular: ["Painting", "Drama Club"],
-        organization: "XYZ High School",
-        organizationEmail: "xyz@highschool.in",
-        overallGrade: "A-",
-        feesPaid: "Paid",
-    },
-    {
-        firstname: "Rahul",
-        lastname: "Verma",
-        bio: "A tech-savvy student with a love for coding.",
-        className: "11th",
-        section: "C",
-        dateOfBirth: "2007-03-10",
-        gender: "Male",
-        guardian: "Anil Verma",
-        guardianContact: "9876543212",
-        address: "789 Pine St, Delhi",
-        id: "3",
-        rollNo: 103,
-        stream: "Computer Science",
-        studentId: "STU003",
-        attendancePercentage: 88,
-        extraCurricular: ["Coding Club", "Robotics"],
-        organization: "LMN High School",
-        organizationEmail: "lmn@highschool.in",
-        overallGrade: "B+",
-        feesPaid: "Pending",
-    },
-    {
-        firstname: "Sneha",
-        lastname: "Patel",
-        bio: "A bright student excelling in mathematics.",
-        className: "12th",
-        section: "A",
-        dateOfBirth: "2006-11-05",
-        gender: "Female",
-        guardian: "Rajesh Patel",
-        guardianContact: "9876543213",
-        address: "321 Oak St, Ahmedabad",
-        id: "4",
-        rollNo: 104,
-        stream: "Mathematics",
-        studentId: "STU004",
-        attendancePercentage: 97,
-        extraCurricular: ["Math Club", "Debate Team"],
-        organization: "PQR High School",
-        organizationEmail: "pqr@highschool.in",
-        overallGrade: "A+",
-        feesPaid: "Paid",
-    },
-    {
-        firstname: "Amit",
-        lastname: "Singh",
-        bio: "A sports enthusiast with a talent for cricket.",
-        className: "10th",
-        section: "D",
-        dateOfBirth: "2008-01-18",
-        gender: "Male",
-        guardian: "Vijay Singh",
-        guardianContact: "9876543214",
-        address: "654 Maple St, Jaipur",
-        id: "5",
-        rollNo: 105,
-        stream: "General",
-        studentId: "STU005",
-        attendancePercentage: 85,
-        extraCurricular: ["Cricket Team", "Athletics"],
-        organization: "STU High School",
-        organizationEmail: "stu@highschool.in",
-        overallGrade: "B",
-        feesPaid: "Pending",
-    },
+const columns: ColumnDef<Student>[] = [
+  {
+    accessorKey: "firstname",
+    header: "Name",
+    isFilterable: true,
+    filterType: "text",
+    cell: (row) => (
+      <div className="flex items-center">
+        <div className="flex-shrink-0 h-10 w-10">
+          <Image
+            className="h-10 w-10 rounded-full object-cover"
+            src={
+              row.profilePic ||
+              `https://avatar.iran.liara.run/username?username=${row?.firstname.toLowerCase()}`
+            }
+            alt={`${row.firstname}-pic`}
+            width={40}
+            height={40}
+          />
+        </div>
+        <div className="ml-4">
+          <div className="text-sm font-medium text-gray-900">
+            {row.firstname} {row.lastname}
+          </div>
+          <div className="text-sm text-gray-500">{row.gender}</div>
+        </div>
+      </div>
+    ),
+  },
+  { accessorKey: "id", header: "Student ID" },
+  {
+    accessorKey: "className",
+    header: "Class",
+    isFilterable: true,
+    filterType: "category",
+    filterOptions: ["10th", "11th", "12th"],
+  },
+  {
+    accessorKey: "section",
+    header: "Section",
+    isFilterable: true,
+    filterType: "category",
+    filterOptions: ["A", "B", "C"],
+  },
+  { accessorKey: "rollNo", header: "Roll No." },
+  {
+    accessorKey: "guardian",
+    header: "Guardian",
+    isFilterable: true,
+    filterType: "text",
+  },
 ];
 
 export const StudentDirectory = () => {
+  const [aiFilters, setAiFilters] = useState<FilterCondition[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(0); // API is 0-indexed
+  const [pageSize, setPageSize] = useState(10);
+
+  const filterableSchema = useMemo(
+    () =>
+      columns
+        .filter((c) => c.isFilterable)
+        .map((c) => ({
+          accessorKey: c.accessorKey,
+          header: c.header,
+          filterType: c.filterType,
+          filterOptions: c.filterOptions,
+        })),
+    []
+  );
+
+  // Data Fetching with React Query, triggered by page, pageSize, or aiFilters
+  const { data, isFetching } = useQuery({
+    queryKey: ["students", page, pageSize, aiFilters],
+    queryFn: async () => {
+      const apiFilters = translateAiFiltersToApiFilters(aiFilters);
+      const response = await axiosInstance.post(
+        `/student/get_students`,
+        { pageNumber: page, pageSize, filters: apiFilters },
+        { withCredentials: true }
+      );
+      return response.data;
+    },
+    placeholderData: (prevData) => prevData,
+  });
+
+  const students: Student[] = data?.students || [];
+  const totalElements = data?.totalElements || 0;
+
+  // AI Search Logic
+  useEffect(() => {
+    const handler = setTimeout(async () => {
+      if (searchQuery.length < 3) {
+        setAiFilters([]);
+        return;
+      }
+      const response = await fetch("/api/ai-filter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: searchQuery, schema: filterableSchema }),
+      });
+      const generatedFilters: FilterCondition[] = await response.json();
+      setAiFilters(generatedFilters);
+      setPage(0); // Reset to first page on new search
+    }, 800);
+    return () => clearTimeout(handler);
+  }, [searchQuery, filterableSchema]);
+
+  const handleSearchQueryChange = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
-      <div className="flex justify-between items-center mb-4">
+      {/* <div className="flex justify-between items-center mb-4">
         <h3 className="font-bold text-gray-800 text-lg">Student Directory</h3>
         <button className="text-sm text-gray-600 border rounded-lg px-3 py-1.5 hover:bg-gray-50">
           Filter & Short
         </button>
-      </div>
+      </div> */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <GenericDataTable
+          title="Students Directory"
+          data={students}
+          columns={columns}
+          ctaButton={[]}
+          onSearchQueryChange={handleSearchQueryChange}
+          isAiProcessing={isFetching}
+          aiFilters={aiFilters}
+          totalCount={totalElements}
+          onPageChange={(newPage) => setPage(newPage - 1)}
+          onItemsPerPageChange={setPageSize}
+        />
+        {/* <table className="w-full text-left text-sm">
           <thead>
             <tr className="text-gray-500">
-              <th className="py-2 pr-4">Student Name</th>
+               
               <th className="py-2 px-4">Parents Names</th>
               <th className="py-2 px-4">Phone</th>
               <th className="py-2 px-4">Class</th>
@@ -186,7 +203,7 @@ export const StudentDirectory = () => {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table> */}
       </div>
     </div>
   );

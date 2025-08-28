@@ -1,28 +1,63 @@
 "use client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus, UserPlus } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { AdminDasboardRightPanel } from "../components/AdminDashboardRightPanel";
 import { AttendanceCard } from "../components/common/AttendanceCard";
 import { StatCard } from "../components/common/StatCard";
 import { StudentDirectory } from "../components/StudentDirectory";
 import axios from "../lib/axiosInstance"; // Adjust the path as necessary
-import { Teacher } from "../types/types";
+import { Teacher, User } from "../types/types";
+import AddStudent from "../components/AddStudent";
+import axiosInstance from "../lib/axiosInstance";
+import moment from "moment";
+import { translateAiFiltersToApiFilters } from "../lib/utils";
+import { FilterCondition } from "../components/common/GenericTable";
 
 const DashboardPage: React.FC = () => {
+  const [open, setOpen] = useState(false);
+
   const queryClient = useQueryClient();
-  const currentUser = queryClient.getQueryData<Teacher>(["currentUser"]);
+  const { data: studentCount } = useQuery({
+    queryKey: ["studentCount"],
+    queryFn: async () => (await axiosInstance.get("/student/count")).data,
+    placeholderData: {},
+  });
+  const { data: teacherCount } = useQuery({
+    queryKey: ["teacherCount"],
+    queryFn: async () => (await axiosInstance.get("/teacher/count")).data,
+    placeholderData: {},
+  });
+  const { data: currentUser } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: async () => (await axiosInstance.get("/user/me")).data,
+    placeholderData: {},
+  });
   const { data: classData } = useQuery({
     queryKey: ["classData", currentUser?.id],
     queryFn: async () => {
       if (!currentUser?.id) return [];
-      const response = await axios.get(`/teacher/${currentUser.id}/classes`, {
-        withCredentials: true,
-      });
+      const response = await axiosInstance.get(
+        `/teacher/${currentUser.id}/classes`,
+        {
+          withCredentials: true,
+        }
+      );
       return response.data;
     },
   });
   console.log({ currentUser, classData });
+
+  const { data: attendanceCount } = useQuery({
+    queryKey: ["attendanceCount"],
+    queryFn: async () =>
+      (
+        await axiosInstance.get("/student/attendance-count", {
+          params: { start: moment().format("YYYY-MM-DD") },
+        })
+      ).data,
+    placeholderData: {},
+  });
 
   return (
     <span className="flex flex-col gap-2">
@@ -38,7 +73,10 @@ const DashboardPage: React.FC = () => {
             <CalendarPlus size={16} />
             Schedule Class
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700">
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700"
+            onClick={() => setOpen(true)}
+          >
             <UserPlus size={16} />
             New Admission
           </button>
@@ -49,36 +87,24 @@ const DashboardPage: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Top Stat Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Students"
-              value="5,252"
-            />
-            <StatCard
-              title="Total Teachers"
-              value="132"
-            />
-            <StatCard
-              title="Working Staff"
-              value="38"
-            />
-            <StatCard
-              title="This Month Events"
-              value="15"
-            />
+            <StatCard title="Total Students" value={studentCount.count || 0} />
+            <StatCard title="Total Teachers" value={teacherCount.count} />
+            <StatCard title="Working Staff" value="38" />
+            <StatCard title="This Month Events" value="15" />
           </div>
 
           {/* Attendance Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <AttendanceCard
               title="Student Attendance"
-              present={4752}
-              absent={437}
+              present={attendanceCount.PRESENT}
+              absent={attendanceCount.LATE}
               color="text-orange-500"
             />
             <AttendanceCard
               title="Teachers Attendance"
-              present={132}
-              absent={4}
+              present={attendanceCount.PRESENT}
+              absent={100}
               color="text-pink-500"
             />
             <AttendanceCard
@@ -106,6 +132,11 @@ const DashboardPage: React.FC = () => {
         {/* Right Sidebar */}
         <div className="lg:col-span-1">
           <AdminDasboardRightPanel />
+          <AddStudent
+            bulkUpload={false}
+            open={open}
+            onClose={() => setOpen(false)}
+          />
         </div>
       </main>
     </span>

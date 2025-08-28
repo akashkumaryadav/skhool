@@ -1,6 +1,9 @@
 import React from "react";
 import "@/styles/globals.css"; // Import global styles including Tailwind directives
 import Providers from "./providers";
+import { CommandPaletteProvider } from "./components/commandPallete/CommandPalleteContext";
+import { CommandPalette } from "./components/commandPallete/CommandPallete";
+import { AppRoutesForAI } from "./lib/navigationRoutes";
 interface RootLayoutProps {
   children: React.ReactNode;
 }
@@ -10,6 +13,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en">
       <body className="bg-gray-100 antialiased">
         <Providers>
+          <CommandPaletteProvider>
+          <CommandPalette siteRoutes={AppRoutesForAI} />
           <div className="flex h-screen bg-blue-600 font-sans">
             <div className="flex-1 flex flex-col overflow-hidden">
               <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-0 m-0">
@@ -17,6 +22,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               </main>
             </div>
           </div>
+          </CommandPaletteProvider>
         </Providers>
       </body>
     </html>
