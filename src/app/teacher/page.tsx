@@ -1,122 +1,103 @@
 // app/page.tsx
 "use client";
-import React from "react";
-import DashboardCard from "@/app/components/DashboardCard";
-import StudentPerformanceChart from "@/app/components/StudentPerformanceChart";
-import AttendanceOverview from "@/app/components/AttendanceOverview";
-import QuickActions from "@/app/components/QuickAction";
-import Announcements from "@/app/components/Announcements";
-import LearningResourcesLink from "@/app/components/LearningResources";
-import AIFaqWidget from "@/app/components/AIFaqWidget";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  ChartBarIcon,
-  CalendarDaysIcon,
-  BoltIcon,
-  MegaphoneIcon,
-  BookOpenIcon,
-  SparklesIcon,
-  UsersIcon,
-  PresentationChartLineIcon,
-} from "@/app/components/icons";
-import { useQuery } from "@tanstack/react-query";
+  CalendarDays,
+  CalendarPlus,
+  ClipboardPlus,
+  UserPlus,
+} from "lucide-react";
+import React from "react";
+import { AdminDasboardRightPanel } from "../components/AdminDashboardRightPanel";
+import { AttendanceCard } from "../components/common/AttendanceCard";
+import { StatCard } from "../components/common/StatCard";
+import { StudentDirectory } from "../components/StudentDirectory";
 import axios from "../lib/axiosInstance"; // Adjust the path as necessary
 import { Teacher } from "../types/types";
+import { AssignmentsOverview } from "../components/AssignmentOverview";
+import { TeacherRightSidebar } from "../components/TeacherRightSidebar";
+import { MyClasses } from "../components/common/MyClassCards";
+
+const classes = [
+  {
+    subject: "Mathematics",
+    grade: "10th Grade",
+    students: 32,
+    color: "border-blue-500",
+  },
+  {
+    subject: "Physics",
+    grade: "10th Grade",
+    students: 28,
+    color: "border-purple-500",
+  },
+  {
+    subject: "Algebra II",
+    grade: "11th Grade",
+    students: 25,
+    color: "border-teal-500",
+  },
+];
 
 const DashboardPage: React.FC = () => {
-  const { data: userData } = useQuery<Teacher>({
-    queryKey: ["userData"],
-  });
+  const queryClient = useQueryClient();
+  const currentUser = queryClient.getQueryData<Teacher>(["currentUser"]);
   const { data: classData } = useQuery({
-    queryKey: ["classData", userData?.id],
+    queryKey: ["classData", currentUser?.id],
     queryFn: async () => {
-      if (!userData?.id) return [];
-      const response = await axios.get(`/teacher/${userData.id}/classes`, {
+      if (!currentUser?.id) return [];
+      const response = await axios.get(`/teacher/${currentUser.id}/classes`, {
         withCredentials: true,
       });
       return response.data;
     },
   });
-  console.log({ userData, classData });
+  console.log({ currentUser, classData });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-      {/* General Stats Cards */}
-      <DashboardCard
-        title="Total Students"
-        icon={<UsersIcon className="w-8 h-8 text-skhool-blue-500" />}
-      >
-        <p className="text-3xl font-bold text-gray-700">350</p>
-        <p className="text-sm text-green-500">+5 since last month</p>
-      </DashboardCard>
-      <DashboardCard
-        title="Classes Assigned"
-        icon={
-          <PresentationChartLineIcon className="w-8 h-8 text-skhool-orange-500" />
-        }
-      >
-        <p className="text-3xl font-bold text-gray-700">{classData?.length}</p>
-        <p className="text-sm text-gray-500">
-          Grades{" "}
-          {classData?.map((c: { name: string; section: string }) =>
-            c.name.concat(c.section).concat(" ")
-          )}
-        </p>
-      </DashboardCard>
+    <span className="flex flex-col gap-2">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Teacher Dashboard
+          </h1>
+          <p className="text-gray-500">Welcome, {currentUser?.firstname}</p>
+        </div>
+        <div className="flex items-center gap-4 mt-4 sm:mt-0">
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50">
+            <CalendarDays size={16} />
+            My Schedule
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700">
+            <ClipboardPlus size={16} />
+            Create Assignment
+          </button>
+        </div>
+      </header>
+      <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content Area */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Top Stat Cards - Reusing the StatCard component with different data */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <StatCard title="My Students" value="85" />
+            <StatCard title="Classes Assigned" value="3" />
+            <StatCard title="Assignments to Grade" value="1" />
+            <StatCard title="Upcoming Events" value="2" />
+          </div>
 
-      <div className="md:col-span-2 lg:col-span-1 xl:col-span-2">
-        <DashboardCard
-          title="Attendance Overview"
-          icon={<CalendarDaysIcon className="w-8 h-8 text-green-500" />}
-        >
-          <AttendanceOverview />
-        </DashboardCard>
-      </div>
+          {/* My Classes Widget */}
+          <MyClasses />
 
-      <div className="md:col-span-2 lg:col-span-3 xl:col-span-2">
-        <DashboardCard
-          title="Student Performance (Class Average)"
-          icon={<ChartBarIcon className="w-8 h-8 text-indigo-500" />}
-        >
-          <StudentPerformanceChart />
-        </DashboardCard>
-      </div>
+          {/* Assignments Overview Widget */}
+          <AssignmentsOverview />
+        </div>
 
-      <div className="md:col-span-2 lg:col-span-3 xl:col-span-2">
-        <DashboardCard
-          title="Quick Actions"
-          icon={<BoltIcon className="w-8 h-8 text-yellow-500" />}
-        >
-          <QuickActions />
-        </DashboardCard>
-      </div>
-
-      <div className="md:col-span-1 lg:col-span-2 xl:col-span-2">
-        <DashboardCard
-          title="School Announcements"
-          icon={<MegaphoneIcon className="w-8 h-8 text-red-500" />}
-        >
-          <Announcements />
-        </DashboardCard>
-      </div>
-
-      <div className="md:col-span-1 lg:col-span-1 xl:col-span-2">
-        <DashboardCard
-          title="Learning Resources"
-          icon={<BookOpenIcon className="w-8 h-8 text-teal-500" />}
-        >
-          <LearningResourcesLink />
-        </DashboardCard>
-      </div>
-
-      <div className="md:col-span-2 lg:col-span-3 xl:col-span-4">
-        <DashboardCard
-          title="AI-Powered FAQ"
-          icon={<SparklesIcon className="w-8 h-8 text-purple-500" />}
-        >
-          <AIFaqWidget />
-        </DashboardCard>
-      </div>
-    </div>
+        {/* Right Sidebar */}
+        <div className="lg:col-span-1">
+          <TeacherRightSidebar />
+        </div>
+      </main>
+    </span>
   );
 };
 

@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import Sidebar from "@/app/components/SideNavigation";
+import SidebarNavigation from "@/app/components/SideNavigation";
 import Header from "@/app/components/Header";
 import { APP_NAME } from "@/app/constants"; // Assuming APP_NAME is defined in constants
 import Head from "next/head"; // Keep for specific head tags if needed beyond metadata
@@ -43,8 +43,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </Head>
       <body className="bg-base-200 antialiased">
         <div className="flex h-screen bg-base-200 font-sans">
-          <Sidebar
-            isOpen={sidebarOpen}
+          <SidebarNavigation
+            collapsed={!sidebarOpen}
             toggleSidebar={toggleSidebar}
             role="student"
           />

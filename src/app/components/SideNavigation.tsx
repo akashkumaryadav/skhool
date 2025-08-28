@@ -1,176 +1,349 @@
-import React from "react";
-import { NavItem } from "@/app/types/types"; // Adjust the import path as necessary
+// components/MarketingSidebar.tsx
+"use client";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  HomeIcon,
-  UsersIcon,
-  CalendarDaysIcon,
-  DocumentChartBarIcon,
-  BookOpenIcon,
-  SparklesIcon,
-  Cog6ToothIcon,
-  XMarkIcon,
-  ChatBubbleLeftRightIcon,
-  AcademicCapIcon,
-} from "@/app/components/icons"; // Ensure icons are correctly imported/defined in constants.tsx
+  BookA,
+  BookCopy,
+  Bot,
+  CalendarCheck2,
+  ChartBarIncreasing,
+  Cog,
+  LayoutDashboard,
+  MoreHorizontal,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { NavItem as NavItemType, Teacher } from "../types/types";
+import { usePathname } from "next/navigation";
 
-interface SidebarProps {
-  isOpen: boolean;
-  toggleSidebar: () => void;
-  role?: string; // Optional prop to differentiate between teacher and student views
-}
-
-const navigationItems: NavItem[] = [
+const mainNavItems: NavItemType[] = [
   {
     name: "Dashboard",
-    href: "/teacher/",
-    icon: HomeIcon,
+    href: "/teacher",
+    icon: LayoutDashboard,
     current: true,
-    type: "teacher", // Added type to differentiate
+    role: "teacher", // Added role to differentiate
   },
-  { name: "Students", href: "/teacher/students", icon: UsersIcon , type: "teacher" },
-  { name: "Attendance", href: "/teacher/attendance", icon: CalendarDaysIcon, type: "teacher" },
+  { name: "Students", href: "/teacher/students", icon: Users, role: "teacher" },
+  {
+    name: "Attendance",
+    href: "/teacher/attendance",
+    icon: CalendarCheck2,
+    role: "teacher",
+  },
   {
     name: "Grades/Performance",
     href: "/teacher/grades",
-    icon: DocumentChartBarIcon,
-    type: "teacher",
+    icon: ChartBarIncreasing,
+    role: "teacher",
   },
   {
     name: "Learning Resources",
     href: "/teacher/resources",
-    icon: BookOpenIcon,
-    type: "teacher",
+    icon: BookCopy,
+    role: "teacher",
   },
-  {
-    name: "AI Helper",
-    href: "/teacher/ai-helper",
-    icon: ChatBubbleLeftRightIcon,
-    type: "teacher",
-  }, // Changed from Sparkles to Chat specific
-  { name: "Settings", href: "/teacher/settings", icon: Cog6ToothIcon , type: "teacher" },
 
   {
     name: "Student Dashboard",
     href: "/student/dashboard",
-    icon: HomeIcon,
-    type: "student",
+    icon: LayoutDashboard,
+    role: "student",
   },
   {
     name: "My Courses",
     href: "/student/courses",
-    icon: AcademicCapIcon,
-    type: "student",
+    icon: BookA,
+    role: "student",
   },
   {
     name: "My Grades",
     href: "/student/grades",
-    icon: DocumentChartBarIcon,
-    type: "student",
+    icon: ChartBarIncreasing,
+    role: "student",
   },
   {
     name: "My Attendance",
     href: "/student/attendance",
-    icon: CalendarDaysIcon,
-    type: "student",
+    icon: CalendarCheck2,
+    role: "student",
   },
   {
     name: "View Resources",
     href: "/student/resources",
-    icon: BookOpenIcon,
-    type: "student",
+    icon: BookA,
+    role: "student",
   },
   {
     name: "Student Settings",
     href: "/student/settings",
-    icon: Cog6ToothIcon,
-    type: "student",
+    icon: Cog,
+    role: "student",
   },
   // for admins
   {
     name: "Admin Dashboard",
     href: "/admin/",
-    icon: HomeIcon,
+    icon: LayoutDashboard,
     current: true,
-    type: "admin",
+    role: "admin",
   },
-  { name: "Manage Teachers", href: "/admin/teachers", icon: UsersIcon, type: "admin" },
-  { name: "Manage Students", href: "/admin/students", icon: UsersIcon, type: "admin" },
+  {
+    name: "Manage Teachers",
+    href: "/admin/teachers",
+    icon: Users,
+    role: "admin",
+  },
+  {
+    name: "Manage Students",
+    href: "/admin/students",
+    icon: Users,
+    role: "admin",
+  },
+];
+
+const accountNavItems: NavItemType[] = [
+  {
+    name: "AI Helper",
+    href: "/teacher/ai-helper",
+    icon: Bot,
+    role: "teacher",
+  }, // Changed from Sparkles to Chat specific
+  { name: "Settings", href: "/teacher/settings", icon: Cog, role: "teacher" },
   {
     name: "Admin AI Helper",
     href: "/admin/ai-helper",
-    icon: ChatBubbleLeftRightIcon,
-    type: "admin",
+    icon: Bot,
+    role: "admin",
   }, // Changed from Sparkles to Chat specific
-  { name: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, type: "admin" },
-
+  { name: "Settings", href: "/admin/settings", icon: Cog, role: "admin" },
 ];
+// Define prop types
+interface SidebarProps {
+  mode?: "light" | "dark";
+  collapsed?: boolean;
+  role?: "teacher" | "student" | "admin";
+  toggleSidebar?: () => void;
+}
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar, role }) => {
-  const [selected, setSelected] = React.useState<string>(
-    navigationItems.find((item) => item.current)?.name || ""
-  );
+// Define nav item types
+
+// Helper component for navigation items to keep the main component clean
+const NavItem: React.FC<
+  NavItemType & { collapsed?: boolean; mode?: "light" | "dark" }
+> = ({
+  icon: Icon,
+  name,
+  href,
+  current,
+  notificationCount,
+  collapsed = true,
+  mode,
+}) => {
+  const isDark = mode === "dark";
+  const baseClasses = "flex items-center p-2 rounded-lg cursor-pointer";
+  const hoverClasses = isDark ? "hover:bg-blue-700" : "hover:bg-gray-100";
+  const textClasses = current
+    ? isDark
+      ? "text-white font-semibold"
+      : "text-gray-900 font-semibold"
+    : isDark
+    ? "text-gray-300"
+    : "text-gray-600";
 
   return (
-    <>
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        ></div>
-      )}
+    <Link href={href}>
+      <span className={`${baseClasses} ${hoverClasses} ${textClasses}`}>
+        <Icon
+          className={`w-5 h-5 transition-transform duration-300 ${
+            current ? "scale-105" : ""
+          }`}
+        />
+        {!collapsed && <span className="ml-4 text-sm">{name}</span>}
+        {!collapsed && notificationCount && (
+          <span
+            className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${
+              name === "Notifications"
+                ? "bg-green-400 text-green-900"
+                : "bg-yellow-400 text-yellow-900"
+            }`}
+          >
+            {notificationCount}
+          </span>
+        )}
+      </span>
+    </Link>
+  );
+};
 
+const Sidebar: React.FC<SidebarProps> = ({
+  mode = "light",
+  collapsed = true,
+  role = "teacher",
+  toggleSidebar = () => {},
+}) => {
+  const queryClient = useQueryClient();
+  const currentPathName = usePathname();
+
+  const currentUser = queryClient.getQueryData<Teacher>(["currentUser"]);
+  const isDark = mode === "dark";
+
+  const containerClasses = `flex flex-col hidden sm:hidden md:flex h-full transition-width duration-300 ${
+    isDark ? "bg-blue-800 text-white" : "bg-white text-gray-800"
+  } ${collapsed ? "w-20" : "w-72"} shadow-lg`;
+
+  return (
+    <div className={containerClasses}>
+      {/* Top section */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-neutral text-white transition-transform duration-300 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`p-4 flex-grow flex flex-col ${
+          collapsed ? "items-center" : ""
         }`}
       >
-        <div className="flex items-center justify-between h-20 px-6 border-b border-skhool-blue-700">
-          <a href="#" className="flex items-center space-x-2">
-            <SparklesIcon className="h-8 w-8 text-skhool-orange-500" />
-            <span className="text-2xl font-bold">{`Skhool`}</span>
-          </a>
-          <button
-            onClick={toggleSidebar}
-            className="text-gray-300 hover:text-white lg:hidden"
-            aria-label="Close sidebar"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
+        {/* Header */}
+        <div
+          className={`flex items-center ${
+            collapsed ? "justify-center" : "justify-between"
+          } mb-4`}
+        >
+          {/* {!collapsed && (
+            <Search
+              className={`w-5 h-5 ${
+                isDark ? "text-gray-300" : "text-gray-500"
+              }`}
+            />
+          )} */}
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-          {navigationItems
-            .filter((n) => n.type === role)
-            .map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={() => {
-                  setSelected(item.name);
-                }}
-                className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200
-                ${
-                  selected === item.name
-                    ? "bg-base-100 text-base-content shadow-lg"
-                    : "text-skhool-blue-100 hover:bg-skhool-blue-700 hover:text-white"
-                }`}
-              >
-                <item.icon className="h-6 w-6 mr-3" aria-hidden="true" />
-                {item.name}
-              </Link>
-            ))}
+        {/* Personal/Business Toggle
+        {!collapsed && (
+          <div
+            className={`p-1 rounded-lg flex text-sm font-semibold my-4 ${
+              isDark ? "bg-blue-900" : "bg-gray-100"
+            }`}
+          >
+            <button
+              className={`w-1/2 py-2 rounded-md ${
+                isDark ? "bg-white text-blue-800" : "bg-blue-500 text-white"
+              }`}
+            >
+              PERSONAL
+            </button>
+            <button
+              className={`w-1/2 py-2 rounded-md ${
+                isDark ? "text-gray-300" : "text-gray-500"
+              }`}
+            >
+              BUSINESS
+            </button>
+          </div>
+        )} */}
+
+        {/* Main Navigation */}
+        <nav className="space-y-2">
+          {mainNavItems.map(
+            (item) =>
+              currentUser?.role === item?.role && (
+                <NavItem
+                  key={item.name}
+                  {...item}
+                  current={currentPathName === item.href}
+                  collapsed={collapsed}
+                  mode={mode}
+                />
+              )
+          )}
         </nav>
 
-        <div className="px-6 py-4 border-t border-skhool-blue-700">
-          <p className="text-xs text-skhool-blue-300">
-            &copy; {new Date().getFullYear()} Skhool.co.in
+        {/* Divider and Account section */}
+        <hr
+          className={`my-4 ${isDark ? "border-blue-700" : "border-gray-200"}`}
+        />
+        {!collapsed && (
+          <p className="px-2 mb-2 text-xs font-semibold uppercase text-gray-400">
+            Account
           </p>
+        )}
+
+        <nav className="space-y-2">
+          {accountNavItems.map(
+            (item) =>
+              currentUser?.role === item?.role && (
+                <NavItem
+                  key={item.name}
+                  {...item}
+                  current={currentPathName === item.href}
+                  collapsed={collapsed}
+                  mode={mode}
+                />
+              )
+          )}
+        </nav>
+      </div>
+
+      {/* Bottom User Profile */}
+      <div
+        className={`p-3 border-t ${
+          isDark ? "border-blue-700" : "border-gray-200"
+        }`}
+      >
+        <div className="flex items-center gap-2 justify-center align-middle">
+          {/* <Menu className="w-7 h-7" onClick={toggleSidebar} /> */}
+          {!collapsed && (
+            <span className="flex justify-center align-middle items-center gap-2">
+              <Image
+                src="https://cdnbbsr.s3waas.gov.in/s32d2ca7eedf739ef4c3800713ec482e1a/uploads/2023/04/2023042118.svg"
+                alt="school-logo"
+                width={120}
+                height={120}
+                className="h-12 w-12"
+              />
+              <span className="font-bold text-lg flex flex-col justify-center items-center scale-[0.75]">
+                <span className="text-xs font-normal text-gray-400">
+                  Powered by
+                </span>
+                <Image
+                  src="/images/logo-dark.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                  className="h-12 w-12"
+                />
+                <span className="text-xs font-normal text-gray-400">v1.0</span>
+              </span>
+            </span>
+          )}
+        </div>
+        <div
+          className={`p-2 rounded-lg flex items-center ${
+            isDark ? "bg-blue-900" : "bg-gray-50"
+          } ${collapsed ? "justify-center" : ""}`}
+        >
+          <Image
+            src={
+              currentUser?.profilePic ||
+              `https://avatar.iran.liara.run/username?username=${currentUser?.firstname.toLowerCase()}`
+            }
+            alt="User Avatar"
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
+          {!collapsed && (
+            <div className="ml-3">
+              <p className="text-sm font-semibold">{currentUser?.firstname}</p>
+              <p className="text-xs text-gray-400">
+                {currentUser?.organizationEmail || currentUser?.personalEmail}
+              </p>
+            </div>
+          )}
+          {!collapsed && (
+            <MoreHorizontal className="ml-auto w-5 h-5 text-gray-400" />
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

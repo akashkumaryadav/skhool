@@ -1,11 +1,6 @@
 // app/landing/page.tsx
 "use client";
 
-import React, { useState } from "react";
-import { animated, useSpring, useTrail } from "react-spring"; // Removed useChain, easings - re-add if needed for other non-ThreeJS anims
-// Removed: import * as THREE from 'three';
-// Removed: import { Canvas, useFrame } from '@react-three/fiber';
-// Removed: import { Stars, Text as DreiText, OrbitControls } from '@react-three/drei';
 import {
   AcademicCapIcon,
   BookOpenIcon,
@@ -16,6 +11,8 @@ import {
   UsersIcon,
 } from "@/app/components/icons";
 import { APP_NAME } from "@/app/constants";
+import React, { useState } from "react";
+import { animated, useSpring, useTrail } from "react-spring";
 
 // Helper: Section Component
 interface SectionProps {
@@ -82,12 +79,13 @@ const LandingNavigation: React.FC = () => {
     config: { tension: 280, friction: 60 },
   });
 
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
   const navItems = [
-    { name: "Features", href: "#features" },
-    { name: "How It Works", href: "#how-it-works" },
+    { name: "Features", href: `${basePath}#features` },
+    { name: "How It Works", href: `${basePath}#how-it-works` },
     {
       name: "Login",
-      href: `${process.env.API_URL}/auth/login?redirect=${window.location.origin}/teacher`,
+      href: `${process.env.API_URL}/auth/login?redirect=${basePath}/teacher`,
     },
   ];
 
@@ -99,24 +97,22 @@ const LandingNavigation: React.FC = () => {
       <div className="container mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <a href="#hero" className="flex items-center space-x-2">
-            <SparklesIcon className="h-8 w-8 text-skhool-orange-500" />
-            <span className="text-2xl font-bold text-skhool-blue-800">
-              {APP_NAME}
-            </span>
+            <SparklesIcon className="h-8 w-8 text-orange-500" />
+            <span className="text-2xl font-bold text-blue-800">{APP_NAME}</span>
           </a>
           <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-skhool-blue-600 transition-colors font-medium"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
               >
                 {item.name}
               </a>
             ))}
             <a
               href="/signup"
-              className="bg-skhool-orange-500 hover:bg-skhool-orange-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out"
+              className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:shadow-lg transition duration-150 ease-in-out"
             >
               Sign Up
             </a>
@@ -151,18 +147,18 @@ const HeroSection: React.FC = () => {
   return (
     <Section
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-skhool-blue-50 via-indigo-50 to-purple-50"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
     >
       {/* Removed HeroThreeScene */}
       <div className="relative z-10 flex flex-col items-center">
         <animated.div style={appNameSpring}>
-          <h2 className="text-6xl md:text-7xl font-app-secondary font-bold text-skhool-blue-700 mb-8 tracking-tight">
+          <h2 className="text-6xl md:text-7xl font-app-secondary font-bold text-blue-700 mb-8 tracking-tight">
             {APP_NAME}
           </h2>
         </animated.div>
         <AnimatedTitle
           text={`Empowering Educators, Inspiring Students`}
-          className="text-skhool-blue-800 mb-6"
+          className="text-blue-800 mb-6"
         />
         <AnimatedText
           text="Discover a smarter way to manage classrooms, track performance, and engage with students using AI-powered tools."
@@ -171,7 +167,7 @@ const HeroSection: React.FC = () => {
         />
         <animated.button
           style={ctaProps}
-          className="bg-skhool-orange-500 hover:bg-skhool-orange-600 text-white font-bold py-4 px-10 rounded-lg shadow-xl hover:shadow-2xl transition text-lg transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-skhool-orange-500 focus:ring-opacity-50"
+          className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-10 rounded-lg shadow-xl hover:shadow-2xl transition text-lg transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-500 focus:ring-opacity-50"
           onClick={() =>
             document
               .getElementById("features")
@@ -255,9 +251,9 @@ const FeatureCard: React.FC<{
     >
       <animated.div
         style={iconSpring}
-        className="mb-6 p-4 bg-skhool-blue-100 rounded-full inline-block"
+        className="mb-6 p-4 bg-blue-100 rounded-full inline-block"
       >
-        <feature.icon className="w-10 h-10 text-skhool-blue-600" />
+        <feature.icon className="w-10 h-10 text-blue-600" />
       </animated.div>
       <h3 className="text-xl font-semibold text-gray-800 mb-3">
         {feature.title}
@@ -340,14 +336,14 @@ const HowItWorksSection: React.FC = () => {
   });
 
   return (
-    <Section id="how-it-works" className="bg-skhool-blue-800 text-white">
+    <Section id="how-it-works" className="bg-blue-800 text-white">
       <AnimatedTitle
         text="Get Started in Minutes"
         className="text-white mb-4"
       />
       <AnimatedText
         text={`Follow these simple steps to integrate ${APP_NAME} into your daily routine.`}
-        className="text-skhool-blue-100 max-w-xl mx-auto mb-12 md:mb-16"
+        className="text-blue-100 max-w-xl mx-auto mb-12 md:mb-16"
         delay={300}
       />
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -357,13 +353,13 @@ const HowItWorksSection: React.FC = () => {
             <animated.div
               key={step.id}
               style={style}
-              className="flex flex-col items-center text-center p-6 bg-skhool-blue-700 rounded-lg shadow-xl"
+              className="flex flex-col items-center text-center p-6 bg-blue-700 rounded-lg shadow-xl"
             >
-              <div className="mb-4 p-3 bg-skhool-orange-500 rounded-full">
+              <div className="mb-4 p-3 bg-orange-500 rounded-full">
                 <step.icon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-              <p className="text-skhool-blue-200 text-sm">{step.description}</p>
+              <p className="text-blue-200 text-sm">{step.description}</p>
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 left-full transform -translate-y-1/2 w-16">
                   <svg
@@ -401,7 +397,7 @@ const TestimonialCard: React.FC<{
     className="bg-white p-8 rounded-xl shadow-lg text-center"
   >
     <p className="text-gray-700 italic text-lg mb-4">&ldquo{quote}&rdquo</p>
-    <p className="font-semibold text-skhool-blue-700">- {author}</p>
+    <p className="font-semibold text-blue-700">- {author}</p>
   </animated.div>
 );
 
@@ -463,20 +459,20 @@ const FooterCTASection: React.FC = () => {
   return (
     <Section
       id="footer-cta"
-      className="bg-gradient-to-r from-skhool-blue-700 to-purple-700 text-white"
+      className="bg-gradient-to-r from-blue-700 to-purple-700 text-white"
     >
       <animated.div style={ctaProps} className="text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           Ready to Elevate Your Teaching Experience?
         </h2>
-        <p className="text-lg md:text-xl text-skhool-blue-100 max-w-xl mx-auto mb-10">
+        <p className="text-lg md:text-xl text-blue-100 max-w-xl mx-auto mb-10">
           Join hundreds of educators who are making a difference with {APP_NAME}
           . Sign up today for a free trial or request a personalized demo.
         </p>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
           <a
             href="/signup"
-            className="bg-skhool-orange-500 hover:bg-skhool-orange-600 text-white font-bold py-4 px-10 rounded-lg shadow-xl hover:shadow-2xl transition text-lg transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-skhool-orange-500 focus:ring-opacity-50"
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-10 rounded-lg shadow-xl hover:shadow-2xl transition text-lg transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-500 focus:ring-opacity-50"
           >
             Get Started Free
           </a>
@@ -495,7 +491,7 @@ const FooterCTASection: React.FC = () => {
 // --- Footer ---
 const LandingFooter: React.FC = () => {
   return (
-    <footer className="bg-skhool-blue-900 text-skhool-blue-200 py-12 px-4 sm:px-6 lg:px-8">
+    <footer className="bg-blue-900 text-blue-200 py-12 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto max-w-screen-xl text-center">
         <div className="flex justify-center space-x-6 mb-6">
           <a href="/about" className="hover:text-white transition-colors">
@@ -512,7 +508,7 @@ const LandingFooter: React.FC = () => {
           </a>
         </div>
         <div className="flex items-center justify-center space-x-2 mb-4">
-          <SparklesIcon className="h-6 w-6 text-skhool-orange-500" />
+          <SparklesIcon className="h-6 w-6 text-orange-500" />
           <p className="text-lg font-semibold">{APP_NAME}</p>
         </div>
         <p className="text-sm">
