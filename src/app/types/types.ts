@@ -5,6 +5,7 @@ export interface User {
     lastname?: string;
     profilePic?: string;
     role: string;
+    id:number;
 }
 
 export interface ChartDataPoint {
@@ -63,6 +64,8 @@ export interface Student {
     extraCurricular?: string[]; // Optional: list of extracurricular activities
     organization?: string; // Optional: if linked to a specific school or organization
     feesPaid?: "Paid" | "Pending" | "InProcess" | "Failed"; // Optional: whether school fees are paid
+    contact?:string;
+    admissionDate?:string;
 }
 
 export interface StudentForAttendance extends Student {
@@ -205,4 +208,5 @@ export interface Teacher{
     "gender": string;
     role?: string; // e.g., "Teacher", "Admin"
     dateOfJoining: string; // Format: YYYY-MM-DD
+    roles?:string;
 }

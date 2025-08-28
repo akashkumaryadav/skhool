@@ -4992,6 +4992,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment@npm:^2.30.1":
+  version: 2.30.1
+  resolution: "moment@npm:2.30.1"
+  checksum: 10c0/865e4279418c6de666fca7786607705fd0189d8a7b7624e2e56be99290ac846f90878a6f602e34b4e0455c549b85385b1baf9966845962b313699e7cb847543a
+  languageName: node
+  linkType: hard
+
+"momentjs@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "momentjs@npm:2.0.0"
+  checksum: 10c0/59c9e2ac6266275e38abbc97d013550a9848eacd891d01cdff0a7dbcfe9910fcc0591ae851834ddc36b6d5129881ed96998dd25c5d355ba3c79cbe336cef1919
+  languageName: node
+  linkType: hard
+
 "motion-dom@npm:^12.22.0":
   version: 12.22.0
   resolution: "motion-dom@npm:12.22.0"
@@ -5250,6 +5264,8 @@ __metadata:
     eslint-config-next: "npm:15.3.2"
     framer-motion: "npm:^12.23.0"
     lucide-react: "npm:^0.525.0"
+    moment: "npm:^2.30.1"
+    momentjs: "npm:^2.0.0"
     next: "npm:^15.3.2"
     postcss: "npm:^8.5.4"
     react: "npm:^19.1.0"
