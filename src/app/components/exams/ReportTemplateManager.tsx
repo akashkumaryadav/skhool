@@ -1,17 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { 
-  Plus, 
-  Upload, 
-  Edit, 
-  Trash2, 
-  FileText, 
-  Download, 
+import {
+  Plus,
+  Upload,
+  Edit,
+  Trash2,
+  FileText,
+  Download,
   Eye,
   X,
   Save,
-  Code
+  Code,
 } from "lucide-react";
 import axiosInstance from "../../lib/axiosInstance";
 import { toast } from "react-toastify";
@@ -28,9 +28,15 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
 }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editTemplate, setEditTemplate] = useState<ReportTemplate | null>(null);
-  const [previewTemplate, setPreviewTemplate] = useState<ReportTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<ReportTemplate | null>(
+    null
+  );
 
-  const { data: templates = [], isLoading, refetch } = useQuery({
+  const {
+    data: templates = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["reportTemplates"],
     queryFn: async () => {
       const response = await axiosInstance.get("/report-templates");
@@ -41,7 +47,9 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
 
   const deleteTemplateMutation = useMutation({
     mutationFn: async (templateId: string) => {
-      const response = await axiosInstance.delete(`/report-templates/${templateId}`);
+      const response = await axiosInstance.delete(
+        `/report-templates/${templateId}`
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -61,10 +69,13 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
 
   const downloadTemplate = async (template: ReportTemplate) => {
     try {
-      const response = await axiosInstance.get(`/report-templates/${template.id}/download`, {
-        responseType: "blob",
-      });
-      
+      const response = await axiosInstance.get(
+        `/report-templates/${template.id}/download`,
+        {
+          responseType: "blob",
+        }
+      );
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -84,7 +95,9 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Report Template Manager</h2>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Report Template Manager
+          </h2>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setCreateModalOpen(true)}
@@ -112,8 +125,12 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
           ) : templates.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No templates yet</h3>
-              <p className="text-gray-500 mb-4">Create your first report template to get started</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No templates yet
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Create your first report template to get started
+              </p>
               <button
                 onClick={() => setCreateModalOpen(true)}
                 className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
@@ -124,18 +141,29 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {templates.map((template) => (
-                <div key={template.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div
+                  key={template.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{template.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{template.description}</p>
+                      <h3 className="font-medium text-gray-900">
+                        {template.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {template.description}
+                      </p>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          template.templateType === 'student_report' ? 'bg-blue-100 text-blue-800' :
-                          template.templateType === 'class_report' ? 'bg-green-100 text-green-800' :
-                          'bg-purple-100 text-purple-800'
-                        }`}>
-                          {template.templateType.replace('_', ' ')}
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            template.templateType === "student_report"
+                              ? "bg-blue-100 text-blue-800"
+                              : template.templateType === "class_report"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
+                          {template.templateType.replace("_", " ")}
                         </span>
                         {template.isDefault && (
                           <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
@@ -145,7 +173,7 @@ export const ReportTemplateManager: React.FC<ReportTemplateManagerProps> = ({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-gray-500 mb-3">
                     Variables: {template.variables.length}
                   </div>
@@ -226,16 +254,21 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
   const [formData, setFormData] = useState({
     name: template?.name || "",
     description: template?.description || "",
-    templateType: template?.templateType || "student_report" as const,
+    templateType: template?.templateType || ("student_report" as const),
     templateContent: template?.templateContent || "",
     isDefault: template?.isDefault || false,
   });
-  const [variables, setVariables] = useState<TemplateVariable[]>(template?.variables || []);
+  const [variables, setVariables] = useState<TemplateVariable[]>(
+    template?.variables || []
+  );
 
   const saveTemplateMutation = useMutation({
     mutationFn: async (data: any) => {
       if (template) {
-        const response = await axiosInstance.put(`/report-templates/${template.id}`, data);
+        const response = await axiosInstance.put(
+          `/report-templates/${template.id}`,
+          data
+        );
         return response.data;
       } else {
         const response = await axiosInstance.post("/report-templates", data);
@@ -243,7 +276,11 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
       }
     },
     onSuccess: () => {
-      toast.success(template ? "Template updated successfully!" : "Template created successfully!");
+      toast.success(
+        template
+          ? "Template updated successfully!"
+          : "Template created successfully!"
+      );
       onSuccess();
     },
     onError: (error: any) => {
@@ -265,15 +302,22 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
   };
 
   const addVariable = () => {
-    setVariables([...variables, {
-      key: "",
-      label: "",
-      type: "text",
-      required: false,
-    }]);
+    setVariables([
+      ...variables,
+      {
+        key: "",
+        label: "",
+        type: "text",
+        required: false,
+      },
+    ]);
   };
 
-  const updateVariable = (index: number, field: keyof TemplateVariable, value: any) => {
+  const updateVariable = (
+    index: number,
+    field: keyof TemplateVariable,
+    value: any
+  ) => {
     const updated = [...variables];
     updated[index] = { ...updated[index], [field]: value };
     setVariables(updated);
@@ -292,7 +336,10 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
           <h3 className="text-lg font-semibold text-gray-800">
             {template ? "Edit Template" : "Create Template"}
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
@@ -307,7 +354,9 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 required
               />
@@ -318,7 +367,12 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
               </label>
               <select
                 value={formData.templateType}
-                onChange={(e) => setFormData(prev => ({ ...prev, templateType: e.target.value as any }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    templateType: e.target.value as any,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="student_report">Student Report</option>
@@ -334,7 +388,12 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
@@ -345,7 +404,12 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
               type="checkbox"
               id="isDefault"
               checked={formData.isDefault}
-              onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  isDefault: e.target.checked,
+                }))
+              }
               className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
             />
             <label htmlFor="isDefault" className="ml-2 text-sm text-gray-700">
@@ -360,7 +424,12 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
             </label>
             <textarea
               value={formData.templateContent}
-              onChange={(e) => setFormData(prev => ({ ...prev, templateContent: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  templateContent: e.target.value,
+                }))
+              }
               rows={12}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
               placeholder="Enter HTML template with variables like {{student.name}}, {{exam.name}}, etc."
@@ -371,7 +440,9 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
           {/* Variables */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-medium text-gray-700">Template Variables</h4>
+              <h4 className="text-sm font-medium text-gray-700">
+                Template Variables
+              </h4>
               <button
                 type="button"
                 onClick={addVariable}
@@ -381,7 +452,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
                 Add Variable
               </button>
             </div>
-            
+
             <div className="space-y-3">
               {variables.map((variable, index) => (
                 <div key={index} className="grid grid-cols-12 gap-3 items-end">
@@ -390,7 +461,9 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
                       type="text"
                       placeholder="Variable key"
                       value={variable.key}
-                      onChange={(e) => updateVariable(index, "key", e.target.value)}
+                      onChange={(e) =>
+                        updateVariable(index, "key", e.target.value)
+                      }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
@@ -399,14 +472,18 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
                       type="text"
                       placeholder="Display label"
                       value={variable.label}
-                      onChange={(e) => updateVariable(index, "label", e.target.value)}
+                      onChange={(e) =>
+                        updateVariable(index, "label", e.target.value)
+                      }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
                   <div className="col-span-2">
                     <select
                       value={variable.type}
-                      onChange={(e) => updateVariable(index, "type", e.target.value)}
+                      onChange={(e) =>
+                        updateVariable(index, "type", e.target.value)
+                      }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
                     >
                       <option value="text">Text</option>
@@ -421,7 +498,9 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
                       type="text"
                       placeholder="Default value"
                       value={variable.defaultValue || ""}
-                      onChange={(e) => updateVariable(index, "defaultValue", e.target.value)}
+                      onChange={(e) =>
+                        updateVariable(index, "defaultValue", e.target.value)
+                      }
                       className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
                     />
                   </div>
@@ -430,7 +509,9 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
                       <input
                         type="checkbox"
                         checked={variable.required}
-                        onChange={(e) => updateVariable(index, "required", e.target.checked)}
+                        onChange={(e) =>
+                          updateVariable(index, "required", e.target.checked)
+                        }
                         className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
                     </label>
@@ -464,7 +545,11 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              {saveTemplateMutation.isPending ? "Saving..." : (template ? "Update" : "Create")}
+              {saveTemplateMutation.isPending
+                ? "Saving..."
+                : template
+                ? "Update"
+                : "Create"}
             </button>
           </div>
         </form>
@@ -491,8 +576,13 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Template Preview</h3>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Template Preview
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
@@ -504,7 +594,9 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({
           </div>
 
           <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <h5 className="text-sm font-medium text-gray-700 mb-2">Template Content:</h5>
+            <h5 className="text-sm font-medium text-gray-700 mb-2">
+              Template Content:
+            </h5>
             <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono bg-white p-3 rounded border overflow-auto max-h-96">
               {template.templateContent}
             </pre>
@@ -512,20 +604,37 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({
 
           {template.variables.length > 0 && (
             <div className="mt-4">
-              <h5 className="text-sm font-medium text-gray-700 mb-2">Variables:</h5>
+              <h5 className="text-sm font-medium text-gray-700 mb-2">
+                Variables:
+              </h5>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {template.variables.map((variable, index) => (
-                  <div key={index} className="bg-white border border-gray-200 rounded p-3">
+                  <div
+                    key={index}
+                    className="bg-white border border-gray-200 rounded p-3"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-sm text-indigo-600">{`{{${variable.key}}}`}</span>
-                      <span className={`px-2 py-1 text-xs rounded ${variable.required ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {variable.required ? 'Required' : 'Optional'}
+                      <span
+                        className={`px-2 py-1 text-xs rounded ${
+                          variable.required
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {variable.required ? "Required" : "Optional"}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-700 mt-1">{variable.label}</div>
-                    <div className="text-xs text-gray-500">Type: {variable.type}</div>
+                    <div className="text-sm text-gray-700 mt-1">
+                      {variable.label}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Type: {variable.type}
+                    </div>
                     {variable.defaultValue && (
-                      <div className="text-xs text-gray-500">Default: {variable.defaultValue}</div>
+                      <div className="text-xs text-gray-500">
+                        Default: {variable.defaultValue}
+                      </div>
                     )}
                   </div>
                 ))}

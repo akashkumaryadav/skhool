@@ -85,7 +85,7 @@ const LandingNavigation: React.FC = () => {
     { name: "How It Works", href: `${basePath}#how-it-works` },
     {
       name: "Login",
-      href: `${process.env.API_URL}/auth/login?redirect=${basePath}/teacher`,
+      href: `${basePath}/auth/login`,
     },
   ];
 

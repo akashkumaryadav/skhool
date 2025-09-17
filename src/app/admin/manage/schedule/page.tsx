@@ -97,10 +97,16 @@ const SchedulePage: React.FC = () => {
   const { data: classData } = useQuery({
     queryKey: ["classes"],
     queryFn: async () => (await axiosInstance.get("/class/")).data,
-    placeholderData:[]
+    placeholderData: [],
   });
   const subjects = subjectData?.map((s) => s.name);
-  const classOptions = classData?.map((c)=>new Array(Number(c.sections)).fill(0).map((_c,i)=>`Class ${c.name}${String.fromCharCode(65 + i)}`)).flatmap()
+  const classOptions = classData
+    ?.map((c) =>
+      new Array(Number(c.sections))
+        .fill(0)
+        .map((_c, i) => `Class ${c.className}${String.fromCharCode(65 + i)}`)
+    )
+    .flat();
   const subjectOptions = subjects;
 
   const subjectColors: Record<string, string> = {
@@ -154,9 +160,12 @@ const SchedulePage: React.FC = () => {
     const ai = new GoogleGenAI({
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_STUDIO_API_KEY,
     });
+    // ai.models.list().then((models) => {
+    //   console.log("Available models:", models);
+    // });
 
     return ai.chats.create({
-      model: "gemini-2.5-flash-preview-04-17",
+      model: "gemini-2.5-flash-lite",
       config: {
         systemInstruction: `You are Skhool AI, a specialized assistant for generating school schedules.
 

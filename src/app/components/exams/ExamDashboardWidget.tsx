@@ -1,7 +1,14 @@
 "use client";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FileText, TrendingUp, Users, Calendar, BarChart3, ArrowRight } from "lucide-react";
+import {
+  FileText,
+  TrendingUp,
+  Users,
+  Calendar,
+  BarChart3,
+  ArrowRight,
+} from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import Link from "next/link";
 import axiosInstance from "../../lib/axiosInstance";
@@ -18,12 +25,12 @@ export const ExamDashboardWidget: React.FC = () => {
   const { data: recentExams = [] } = useQuery({
     queryKey: ["recentExamsWidget"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/exams/recent?limit=3");
+      const response = await axiosInstance.get("/api/exams/");
       return response.data;
     },
   });
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
+  const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
 
   const gradeData = examStats?.gradeDistribution || [];
 
@@ -47,7 +54,9 @@ export const ExamDashboardWidget: React.FC = () => {
             <div className="w-10 h-10 mx-auto bg-blue-100 rounded-lg flex items-center justify-center mb-2">
               <FileText className="w-5 h-5 text-blue-600" />
             </div>
-            <p className="text-xl font-bold text-gray-900">{examStats?.totalExams || 0}</p>
+            <p className="text-xl font-bold text-gray-900">
+              {examStats?.totalExams || 0}
+            </p>
             <p className="text-xs text-gray-500">Total Exams</p>
           </div>
 
@@ -55,7 +64,9 @@ export const ExamDashboardWidget: React.FC = () => {
             <div className="w-10 h-10 mx-auto bg-green-100 rounded-lg flex items-center justify-center mb-2">
               <Users className="w-5 h-5 text-green-600" />
             </div>
-            <p className="text-xl font-bold text-gray-900">{examStats?.studentsAssessed || 0}</p>
+            <p className="text-xl font-bold text-gray-900">
+              {examStats?.studentsAssessed || 0}
+            </p>
             <p className="text-xs text-gray-500">Students</p>
           </div>
 
@@ -63,7 +74,9 @@ export const ExamDashboardWidget: React.FC = () => {
             <div className="w-10 h-10 mx-auto bg-purple-100 rounded-lg flex items-center justify-center mb-2">
               <TrendingUp className="w-5 h-5 text-purple-600" />
             </div>
-            <p className="text-xl font-bold text-gray-900">{examStats?.averageScore?.toFixed(1) || 0}%</p>
+            <p className="text-xl font-bold text-gray-900">
+              {examStats?.averageScore?.toFixed(1) || 0}%
+            </p>
             <p className="text-xs text-gray-500">Avg Score</p>
           </div>
 
@@ -71,7 +84,9 @@ export const ExamDashboardWidget: React.FC = () => {
             <div className="w-10 h-10 mx-auto bg-yellow-100 rounded-lg flex items-center justify-center mb-2">
               <BarChart3 className="w-5 h-5 text-yellow-600" />
             </div>
-            <p className="text-xl font-bold text-gray-900">{examStats?.passRate?.toFixed(1) || 0}%</p>
+            <p className="text-xl font-bold text-gray-900">
+              {examStats?.passRate?.toFixed(1) || 0}%
+            </p>
             <p className="text-xs text-gray-500">Pass Rate</p>
           </div>
         </div>
@@ -81,7 +96,9 @@ export const ExamDashboardWidget: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Grade Distribution */}
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h4 className="text-md font-semibold text-gray-800 mb-4">Grade Distribution</h4>
+          <h4 className="text-md font-semibold text-gray-800 mb-4">
+            Grade Distribution
+          </h4>
           {gradeData.length > 0 ? (
             <ResponsiveContainer width="100%" height={150}>
               <PieChart>
@@ -96,7 +113,10 @@ export const ExamDashboardWidget: React.FC = () => {
                   fontSize={10}
                 >
                   {gradeData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
               </PieChart>
@@ -112,7 +132,9 @@ export const ExamDashboardWidget: React.FC = () => {
         {/* Recent Exams */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-md font-semibold text-gray-800">Recent Exams</h4>
+            <h4 className="text-md font-semibold text-gray-800">
+              Recent Exams
+            </h4>
             <Link
               href="/admin/exams"
               className="text-sm text-indigo-600 hover:text-indigo-700"
@@ -120,20 +142,31 @@ export const ExamDashboardWidget: React.FC = () => {
               View All
             </Link>
           </div>
-          
+
           <div className="space-y-3">
             {recentExams.length > 0 ? (
               recentExams.map((exam: any) => (
-                <div key={exam.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={exam.id}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{exam.name}</p>
-                    <p className="text-xs text-gray-500">{exam.subject} • {exam.className}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {exam.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {exam.subject} • {exam.className}
+                    </p>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    exam.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                    exam.status === 'Ongoing' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-blue-100 text-blue-800'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      exam.status === "Completed"
+                        ? "bg-green-100 text-green-800"
+                        : exam.status === "Ongoing"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-blue-100 text-blue-800"
+                    }`}
+                  >
                     {exam.status}
                   </span>
                 </div>
@@ -150,7 +183,9 @@ export const ExamDashboardWidget: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h4 className="text-md font-semibold text-gray-800 mb-4">Quick Actions</h4>
+        <h4 className="text-md font-semibold text-gray-800 mb-4">
+          Quick Actions
+        </h4>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link
             href="/admin/exams"

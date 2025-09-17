@@ -19,7 +19,9 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedExam, setSelectedExam] = useState("");
-  const [uploadResult, setUploadResult] = useState<BulkUploadResult | null>(null);
+  const [uploadResult, setUploadResult] = useState<BulkUploadResult | null>(
+    null
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: exams = [] } = useQuery({
@@ -36,23 +38,31 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       const formData = new FormData();
       formData.append("file", file);
       formData.append("examId", examId);
-      
-      const response = await axiosInstance.post("/exams/bulk-upload-marks", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+
+      const response = await axiosInstance.post(
+        "/exams/bulk-upload-marks",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     },
     onSuccess: (data: BulkUploadResult) => {
       setUploadResult(data);
       if (data.failed === 0) {
-        toast.success(`Successfully uploaded marks for ${data.success} students!`);
+        toast.success(
+          `Successfully uploaded marks for ${data.success} students!`
+        );
         setTimeout(() => {
           onSuccess();
         }, 2000);
       } else {
-        toast.warning(`Uploaded ${data.success} records, ${data.failed} failed`);
+        toast.warning(
+          `Uploaded ${data.success} records, ${data.failed} failed`
+        );
       }
     },
     onError: (error: any) => {
@@ -63,7 +73,7 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (!file.name.endsWith('.csv') && !file.name.endsWith('.xlsx')) {
+      if (!file.name.endsWith(".csv") && !file.name.endsWith(".xlsx")) {
         toast.error("Please select a CSV or Excel file");
         return;
       }
@@ -86,7 +96,7 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
       const response = await axiosInstance.get("/exams/download-template", {
         responseType: "blob",
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -115,7 +125,9 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Bulk Upload Marks</h2>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Bulk Upload Marks
+          </h2>
           <button
             onClick={() => {
               onClose();
@@ -183,7 +195,7 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              
+
               {selectedFile ? (
                 <div className="flex items-center justify-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500" />
@@ -206,7 +218,9 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   <p className="text-sm text-gray-600 mb-2">
                     Click to upload or drag and drop
                   </p>
-                  <p className="text-xs text-gray-500">CSV or Excel files only</p>
+                  <p className="text-xs text-gray-500">
+                    CSV or Excel files only
+                  </p>
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="mt-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-white border border-indigo-300 rounded-lg hover:bg-indigo-50"
@@ -229,15 +243,21 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                 )}
                 <h3 className="font-medium text-gray-900">Upload Results</h3>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-sm font-medium text-green-800">Successful</p>
-                  <p className="text-2xl font-bold text-green-900">{uploadResult.success}</p>
+                  <p className="text-sm font-medium text-green-800">
+                    Successful
+                  </p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {uploadResult.success}
+                  </p>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-sm font-medium text-red-800">Failed</p>
-                  <p className="text-2xl font-bold text-red-900">{uploadResult.failed}</p>
+                  <p className="text-2xl font-bold text-red-900">
+                    {uploadResult.failed}
+                  </p>
                 </div>
               </div>
 
@@ -247,7 +267,8 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
                   <div className="max-h-32 overflow-y-auto space-y-1">
                     {uploadResult.errors.map((error, index) => (
                       <p key={index} className="text-sm text-red-700">
-                        Row {error.row}: {error.error} (Student ID: {error.studentId})
+                        Row {error.row}: {error.error} (Student ID:{" "}
+                        {error.studentId})
                       </p>
                     ))}
                   </div>
@@ -270,7 +291,9 @@ export const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
             {!uploadResult && (
               <button
                 onClick={handleUpload}
-                disabled={!selectedFile || !selectedExam || uploadMutation.isPending}
+                disabled={
+                  !selectedFile || !selectedExam || uploadMutation.isPending
+                }
                 className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {uploadMutation.isPending ? "Uploading..." : "Upload Marks"}

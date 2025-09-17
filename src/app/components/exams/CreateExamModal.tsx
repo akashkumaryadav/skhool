@@ -25,19 +25,20 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
     name: examData?.name || "",
     description: examData?.description || "",
     subject: examData?.subject || "",
-    className: examData?.className || "",
+    classId: examData?.classId || "",
     section: examData?.section || "",
     totalMarks: examData?.totalMarks?.toString() || "",
     passingMarks: examData?.passingMarks?.toString() || "",
     examDate: examData?.examDate || "",
     duration: examData?.duration?.toString() || "",
     examType: examData?.examType || ExamType.UNIT_TEST,
+    endDate: examData?.endDate || "",
   });
 
   const { data: classes = [] } = useQuery({
     queryKey: ["classes"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/classes");
+      const response = await axiosInstance.get("/class/");
       return response.data;
     },
   });
@@ -45,7 +46,7 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
   const { data: subjects = [] } = useQuery({
     queryKey: ["subjects"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/subjects");
+      const response = await axiosInstance.get("/subject/");
       return response.data;
     },
   });
@@ -53,20 +54,28 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
   const createExamMutation = useMutation({
     mutationFn: async (data: any) => {
       if (editMode && examData) {
-        const response = await axiosInstance.put(`/exams/${examData.id}`, data);
+        const response = await axiosInstance.put(
+          `/api/exams/${examData.id}`,
+          data
+        );
         return response.data;
       } else {
-        const response = await axiosInstance.post("/exams", data);
+        const response = await axiosInstance.post("/api/exams/", data);
         return response.data;
       }
     },
     onSuccess: () => {
-      toast.success(editMode ? "Exam updated successfully!" : "Exam created successfully!");
+      toast.success(
+        editMode ? "Exam updated successfully!" : "Exam created successfully!"
+      );
       onSuccess();
       resetForm();
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || (editMode ? "Failed to update exam" : "Failed to create exam"));
+      toast.error(
+        error.response?.data?.message ||
+          (editMode ? "Failed to update exam" : "Failed to create exam")
+      );
     },
   });
 
@@ -76,29 +85,30 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
         name: "",
         description: "",
         subject: "",
-        className: "",
+        classId: "",
         section: "",
         totalMarks: "",
         passingMarks: "",
         examDate: "",
         duration: "",
         examType: ExamType.UNIT_TEST,
+        endDate: "",
       });
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.subject || !formData.className || !formData.examDate) {
+
+    if (!formData.name || !formData.classId || !formData.examDate) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    if (Number(formData.passingMarks) > Number(formData.totalMarks)) {
-      toast.error("Passing marks cannot be greater than total marks");
-      return;
-    }
+    // if (Number(formData.passingMarks) > Number(formData.totalMarks)) {
+    //   toast.error("Passing marks cannot be greater than total marks");
+    //   return;
+    // }
 
     createExamMutation.mutate({
       ...formData,
@@ -109,7 +119,7 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   if (!open) return null;
@@ -118,7 +128,9 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">{editMode ? "Edit Exam" : "Create New Exam"}</h2>
+          <h2 className="text-xl font-semibold text-gray-800">
+            {editMode ? "Edit Exam" : "Create New Exam"}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -134,7 +146,7 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
               <BookOpen className="w-5 h-5" />
               Basic Information
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -156,7 +168,9 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
                 </label>
                 <select
                   value={formData.examType}
-                  onChange={(e) => handleInputChange("examType", e.target.value as ExamType)}
+                  onChange={(e) =>
+                    handleInputChange("examType", e.target.value as ExamType)
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {Object.values(ExamType).map((type) => (
@@ -174,7 +188,9 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter exam description (optional)"
@@ -188,9 +204,9 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
               <Users className="w-5 h-5" />
               Class & Subject
             </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Subject *
                 </label>
@@ -207,22 +223,26 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Class *
                 </label>
                 <select
-                  value={formData.className}
-                  onChange={(e) => handleInputChange("className", e.target.value)}
+                  value={formData.classId}
+                  onChange={(e) => handleInputChange("classId", e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 >
                   <option value="">Select Class</option>
                   {classes.map((cls: any) => (
-                    <option key={cls.id} value={cls.name}>
-                      {cls.name}
+                    <option
+                      className="text-gray-700 bg-gray-50"
+                      key={cls.id}
+                      value={cls.id}
+                    >
+                      {cls.className}
                     </option>
                   ))}
                 </select>
@@ -244,7 +264,7 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
           </div>
 
           {/* Marks & Duration */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
               <Clock className="w-5 h-5" />
               Marks & Duration
@@ -296,7 +316,7 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Schedule */}
           <div className="space-y-4">
@@ -304,19 +324,35 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
               <Calendar className="w-5 h-5" />
               Schedule
             </h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Exam Date *
-              </label>
-              <input
-                type="date"
-                value={formData.examDate}
-                onChange={(e) => handleInputChange("examDate", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                min={new Date().toISOString().split('T')[0]}
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Exam Start Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.examDate}
+                  onChange={(e) =>
+                    handleInputChange("examDate", e.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Exam End Date *
+                </label>
+                <input
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => handleInputChange("endDate", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -324,7 +360,9 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={(e) => {
+                onClose();
+              }}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
             >
               Cancel
@@ -334,7 +372,13 @@ export const CreateExamModal: React.FC<CreateExamModalProps> = ({
               disabled={createExamMutation.isPending}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {createExamMutation.isPending ? (editMode ? "Updating..." : "Creating...") : (editMode ? "Update Exam" : "Create Exam")}
+              {createExamMutation.isPending
+                ? editMode
+                  ? "Updating..."
+                  : "Creating..."
+                : editMode
+                ? "Update Exam"
+                : "Create Exam"}
             </button>
           </div>
         </form>

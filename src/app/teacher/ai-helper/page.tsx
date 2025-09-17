@@ -8,8 +8,10 @@ import {
   SparklesIcon,
   UserCircleIcon,
 } from "@/app/components/icons";
-import { ChatMessage } from "@/app/types/types";
+import axiosInstance from "@/app/lib/axiosInstance";
+import { ChatMessage, Teacher } from "@/app/types/types";
 import { Chat, GoogleGenAI } from "@google/genai";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
 
@@ -22,6 +24,8 @@ const AIHelperPage: React.FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   console.log(process.env);
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData<Teacher>(["currentUser"])?.id;
 
   // Initialize Gemini AI and Chat Session
   useEffect(() => {
@@ -39,7 +43,7 @@ const AIHelperPage: React.FC = () => {
         apiKey: process.env.NEXT_PUBLIC_GOOGLE_STUDIO_API_KEY,
       });
       const newChatSession = ai.chats.create({
-        model: "gemini-2.5-flash-preview-04-17",
+        model: "gemini-2.0-flash-thinking-exp-01-21",
         config: {
           systemInstruction:
             "You are Skhool AI, a helpful assistant for teachers. Provide concise, practical, and creative support for educational tasks. Be friendly and encouraging. If asked for JSON, ensure the output is pure JSON without markdown.",
@@ -157,6 +161,57 @@ const AIHelperPage: React.FC = () => {
     }
   };
 
+  const handleSendMessageNew = (messageText?: string) => {
+    const textToSend = messageText || inputValue.trim();
+    if (!textToSend || !chatSession) return;
+    addMessageToChat(textToSend, "user");
+    if (!messageText) setInputValue("");
+    setIsLoading(true);
+    // Add a placeholder for AI's response
+    addMessageToChat("Thinking...", "ai", false, true);
+    axiosInstance
+      .post(process.env.CHAT_URL, {
+        message: textToSend,
+        user_id: user.toString(),
+      })
+      .then((response) => {
+        const aiResponse =
+          response.data.answer.output || "Sorry, I didn't get that.";
+        setChatMessages((prev) =>
+          prev.map((msg) =>
+            msg.isLoading && msg.sender === "ai"
+              ? {
+                  ...msg,
+                  text: aiResponse,
+                  isLoading: false,
+                }
+              : msg
+          )
+        );
+      })
+      .catch((error) => {
+        console.error("Error sending message to Gemini:", error);
+        const errorMessage =
+          error.message || "Sorry, I encountered an error. Please try again.";
+        setChatMessages((prev) =>
+          prev.map((msg) =>
+            msg.isLoading && msg.sender === "ai"
+              ? {
+                  ...msg,
+                  text: errorMessage,
+                  error: errorMessage,
+                  isLoading: false,
+                }
+              : msg
+          )
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
+        inputRef.current?.focus();
+      });
+  };
+
   const predefinedPrompts: {
     title: string;
     prompt: string;
@@ -199,6 +254,29 @@ const AIHelperPage: React.FC = () => {
     inputRef.current?.focus();
     // Or, send directly:
     // handleSendMessage(prompt);
+  };
+
+  const handlePdfDownload = (msg) => {
+    console.log("Handling PDF download for message:", msg);
+    try {
+      const jsonString = msg.text.substring(
+        msg.text.indexOf("{"),
+        msg.text.lastIndexOf("}") + 1
+      );
+      const parsed = JSON.parse(jsonString);
+      if (parsed.pdf && parsed.fileName) {
+        const pdfData = parsed.pdf;
+        const fileName = parsed.fileName;
+        const link = document.createElement("a");
+        link.href = `data:application/pdf;base64,${pdfData}`;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
   };
 
   return (
@@ -275,7 +353,20 @@ const AIHelperPage: React.FC = () => {
                 </p>
               ) : (
                 <p className="text-sm whitespace-pre-wrap">
-                  <Markdown>{msg.text}</Markdown>
+                  {msg.text.includes("{") &&
+                  msg.text.includes("}") &&
+                  msg.text.includes("fileName") ? (
+                    <button
+                      onClick={() => {
+                        handlePdfDownload(msg);
+                      }}
+                      className="mt-2 text-sm text-blue-600 hover:underline"
+                    >
+                      Download PDF
+                    </button>
+                  ) : (
+                    <Markdown>{msg.text}</Markdown>
+                  )}
                 </p>
               )}
               <p
@@ -304,7 +395,8 @@ const AIHelperPage: React.FC = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          handleSendMessage();
+          // handleSendMessage();
+          handleSendMessageNew();
         }}
         className="p-4 border-t border-gray-300 bg-white"
         aria-label="AI Chat Input Form"
@@ -317,7 +409,8 @@ const AIHelperPage: React.FC = () => {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
+                // handleSendMessage();
+                handleSendMessageNew();
               }
             }}
             placeholder="Type your message to Skhool AI..."

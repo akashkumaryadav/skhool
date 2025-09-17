@@ -1,47 +1,22 @@
 // app/page.tsx
 "use client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CalendarDays,
-  CalendarPlus,
-  ClipboardPlus,
-  UserPlus,
-} from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CalendarDays, ClipboardPlus } from "lucide-react";
 import React from "react";
-import { AdminDasboardRightPanel } from "../components/AdminDashboardRightPanel";
-import { AttendanceCard } from "../components/common/AttendanceCard";
 import { StatCard } from "../components/common/StatCard";
-import { StudentDirectory } from "../components/StudentDirectory";
 import axios from "../lib/axiosInstance"; // Adjust the path as necessary
 import { Teacher } from "../types/types";
 import { AssignmentsOverview } from "../components/AssignmentOverview";
 import { TeacherRightSidebar } from "../components/TeacherRightSidebar";
 import { MyClasses } from "../components/common/MyClassCards";
-
-const classes = [
-  {
-    subject: "Mathematics",
-    grade: "10th Grade",
-    students: 32,
-    color: "border-blue-500",
-  },
-  {
-    subject: "Physics",
-    grade: "10th Grade",
-    students: 28,
-    color: "border-purple-500",
-  },
-  {
-    subject: "Algebra II",
-    grade: "11th Grade",
-    students: 25,
-    color: "border-teal-500",
-  },
-];
+import CreateAssignment from "../components/CreateAssignment";
 
 const DashboardPage: React.FC = () => {
+  const [open, setOpen] = React.useState(false);
+
   const queryClient = useQueryClient();
   const currentUser = queryClient.getQueryData<Teacher>(["currentUser"]);
+
   const { data: classData } = useQuery({
     queryKey: ["classData", currentUser?.id],
     queryFn: async () => {
@@ -52,7 +27,22 @@ const DashboardPage: React.FC = () => {
       return response.data;
     },
   });
-  console.log({ currentUser, classData });
+
+  const createAssignmentMutation = useMutation({
+    mutationFn: async (newAssignmentData) => {
+      if (!currentUser?.id) throw new Error("User not logged in");
+      const response = await axios.post(`/api/assignments`, {
+        ...(newAssignmentData || {}),
+        teacherId: currentUser.id,
+      });
+      return response.data;
+    },
+  });
+
+  const handleCreateAssignment = () => {
+    // Logic to open a modal or navigate to the assignment creation page
+    setOpen((prev) => !prev);
+  };
 
   return (
     <span className="flex flex-col gap-2">
@@ -68,7 +58,10 @@ const DashboardPage: React.FC = () => {
             <CalendarDays size={16} />
             My Schedule
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700">
+          <button
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700"
+            onClick={handleCreateAssignment}
+          >
             <ClipboardPlus size={16} />
             Create Assignment
           </button>
@@ -96,6 +89,14 @@ const DashboardPage: React.FC = () => {
         <div className="lg:col-span-1">
           <TeacherRightSidebar />
         </div>
+        {open && (
+          <CreateAssignment
+            open={open}
+            onClose={handleCreateAssignment}
+            onSave={(data) => createAssignmentMutation.mutate(data)}
+            classData={classData || []}
+          />
+        )}
       </main>
     </span>
   );

@@ -2,131 +2,11 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { StudentComprehensiveGrades } from "../../types/types";
+import { Student } from "../../types/types";
 import { DocumentChartBarIcon, ChartBarIcon } from "../../constants";
 import DashboardCard from "../../components/DashboardCard";
-
-// Mock Data - Using the same structure as teacher's grade page but will filter for logged-in student
-// We will use 's1' as the default student for this demo page since auth is removed.
-const MOCK_ALL_STUDENT_GRADES: any[] = [
-  {
-    id: "s1",
-    studentId: "SKL001",
-    firstname: "Aarav",
-    lastname: "Sharma",
-    className: "7th",
-    section: "B",
-    rollNo: 1,
-    gender: "Male",
-    dateOfBirth: "2011-05-15",
-    guardian: "Mr. Rajesh Sharma",
-    guardianContact: "9876543210",
-    profilePic: "https://picsum.photos/seed/aarav/40/40",
-    performance: {
-      "Mid-Term 1": {
-        Maths: {
-          marksObtained: 85,
-          totalMarks: 100,
-          percentage: 85,
-          gradeLetter: "A",
-        },
-        Science: {
-          marksObtained: 78,
-          totalMarks: 100,
-          percentage: 78,
-          gradeLetter: "B+",
-        },
-        English: {
-          marksObtained: 92,
-          totalMarks: 100,
-          percentage: 92,
-          gradeLetter: "A+",
-        },
-        "Social Studies": {
-          marksObtained: 80,
-          totalMarks: 100,
-          percentage: 80,
-          gradeLetter: "A",
-        },
-      },
-      "Final Exam": {
-        Maths: {
-          marksObtained: 90,
-          totalMarks: 100,
-          percentage: 90,
-          gradeLetter: "A+",
-        },
-        Science: {
-          marksObtained: 82,
-          totalMarks: 100,
-          percentage: 82,
-          gradeLetter: "A",
-        },
-        English: {
-          marksObtained: 88,
-          totalMarks: 100,
-          percentage: 88,
-          gradeLetter: "A",
-        },
-        "Social Studies": {
-          marksObtained: 85,
-          totalMarks: 100,
-          percentage: 85,
-          gradeLetter: "A",
-        },
-      },
-    },
-  },
-  // Add another student's data if needed for testing, but 's1' will be the primary for display
-  {
-    id: "s2",
-    studentId: "SKL002",
-    firstname: "Priya",
-    lastname: "Singh",
-    className: "8th",
-    section: "A",
-    rollNo: 5,
-    gender: "Female",
-    dateOfBirth: "2010-03-20",
-    guardian: "Mrs. Anita Singh",
-    guardianContact: "anita.singh@example.com",
-    profilePic: "https://picsum.photos/seed/priya/40/40",
-    performance: {
-      "Mid-Term 1": {
-        Maths: {
-          marksObtained: 75,
-          totalMarks: 100,
-          percentage: 75,
-          gradeLetter: "B+",
-        },
-        Science: {
-          marksObtained: 88,
-          totalMarks: 100,
-          percentage: 88,
-          gradeLetter: "A",
-        },
-      },
-      "Final Exam": {
-        Maths: {
-          marksObtained: 80,
-          totalMarks: 100,
-          percentage: 80,
-          gradeLetter: "A",
-        },
-        Science: {
-          marksObtained: 92,
-          totalMarks: 100,
-          percentage: 92,
-          gradeLetter: "A+",
-        },
-      },
-    },
-  },
-];
-
-const MOCK_EXAM_TYPES_FOR_STUDENT_S1 = MOCK_ALL_STUDENT_GRADES[0]
-  ? Object.keys(MOCK_ALL_STUDENT_GRADES[0].performance)
-  : ["Mid-Term 1", "Final Exam"];
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "@/app/lib/axiosInstance";
 
 const generateGradeLetter = (percentage: number): string => {
   if (percentage >= 90) return "A+";
@@ -140,16 +20,42 @@ const generateGradeLetter = (percentage: number): string => {
 };
 
 const StudentGradesPage: React.FC = () => {
-  const [selectedExamType, setSelectedExamType] = useState<string>(
-    MOCK_EXAM_TYPES_FOR_STUDENT_S1[0]
-  );
+  const [selectedExamType, setSelectedExamType] = useState<number | null>(null);
 
-  // Use the first student ('s1') as the demo student since auth is removed.
-  const studentData =
-    MOCK_ALL_STUDENT_GRADES.find((s) => s.id === "s1") || null;
+  const queryClient = useQueryClient();
+  const currentUser = queryClient.getQueryData<Student>(["currentUser"]);
+
+  const { data: exams } = useQuery({
+    queryKey: ["examTypesForStudent", currentUser?.classId],
+    queryFn: async () =>
+      (
+        await axiosInstance.get("/api/exams/", {
+          params: { classId: currentUser.classId },
+        })
+      ).data,
+    initialData: [],
+  });
+
+  const { data: examGrades } = useQuery({
+    queryKey: ["examGradesForStudent", selectedExamType],
+    queryFn: async () =>
+      (
+        await axiosInstance.get(`/api/exams/${selectedExamType}/results`, {
+          params: { studentId: currentUser.id },
+        })
+      ).data,
+    initialData: [],
+    enabled: !!selectedExamType,
+  });
+
+  React.useEffect(() => {
+    if (!selectedExamType) {
+      setSelectedExamType(exams?.[0]?.id);
+    }
+  }, [exams, selectedExamType]);
 
   const performanceForSelectedExam = useMemo(() => {
-    if (!studentData || !studentData.performance[selectedExamType]) {
+    if (!currentUser || !examGrades || !selectedExamType) {
       return {
         subjectGrades: [],
         overallPercentage: 0,
@@ -157,13 +63,10 @@ const StudentGradesPage: React.FC = () => {
       };
     }
 
-    const examGrades:any = studentData.performance[selectedExamType];
-    const subjectGradesArray = Object.entries(examGrades).map(
-      ([subject, gradeData]) => ({
-        subject,
-        ...gradeData as any,
-      })
-    );
+    const subjectGradesArray = examGrades?.map((grade) => ({
+      subject: grade.subjectName,
+      ...grade,
+    }));
 
     let totalMarksObtained = 0;
     let totalMaxMarks = 0;
@@ -179,12 +82,12 @@ const StudentGradesPage: React.FC = () => {
 
     return {
       subjectGrades: subjectGradesArray,
-      overallPercentage,
-      overallGradeLetter: generateGradeLetter(overallPercentage),
+      overallPercentage: overallPercentage || 0,
+      overallGradeLetter: generateGradeLetter(overallPercentage) || "",
     };
-  }, [studentData, selectedExamType]);
+  }, [currentUser, examGrades, selectedExamType]);
 
-  if (!studentData) {
+  if (!currentUser) {
     return (
       <div className="p-6 bg-white shadow-lg rounded-xl text-center">
         <DocumentChartBarIcon className="w-12 h-12 mx-auto text-gray-400 mb-3" />
@@ -198,12 +101,14 @@ const StudentGradesPage: React.FC = () => {
     );
   }
 
+  console.log({ exams, performanceForSelectedExam });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center mb-6">
         <DocumentChartBarIcon className="w-10 h-10 text-skhool-blue-600 mr-3" />
         <h1 className="text-3xl font-bold text-gray-800">
-          My Grades ({studentData.firstname} {studentData.lastname})
+          My Grades ({currentUser.firstname} {currentUser.lastname})
         </h1>
       </div>
 
@@ -217,13 +122,13 @@ const StudentGradesPage: React.FC = () => {
         </label>
         <select
           id="filter-exam-type-student"
-          value={selectedExamType}
+          value={selectedExamType || ""}
           onChange={(e) => setSelectedExamType(e.target.value)}
           className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
         >
-          {Object.keys(studentData.performance).map((exam) => (
-            <option key={exam} value={exam}>
-              {exam}
+          {exams?.map((exam) => (
+            <option key={exam.id} value={exam.id}>
+              {exam.name}
             </option>
           ))}
         </select>
@@ -323,24 +228,21 @@ const StudentGradesPage: React.FC = () => {
                       {grade.totalMarks}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {grade.percentage.toFixed(2)}%
+                      {grade.percentage?.toFixed(2)}%
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          grade.gradeLetter === "A+" ||
-                          grade.gradeLetter === "A"
+                          grade.grade === "A+" || grade.grade === "A"
                             ? "bg-green-100 text-green-800"
-                            : grade.gradeLetter === "B+" ||
-                              grade.gradeLetter === "B"
+                            : grade.grade === "B+" || grade.grade === "B"
                             ? "bg-blue-100 text-blue-800"
-                            : grade.gradeLetter === "C+" ||
-                              grade.gradeLetter === "C"
+                            : grade.grade === "C+" || grade.grade === "C"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {grade.gradeLetter}
+                        {grade.grade}
                       </span>
                     </td>
                   </tr>

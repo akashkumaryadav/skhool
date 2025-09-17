@@ -14,18 +14,24 @@ const ExamsPage: React.FC = () => {
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
 
-  const { data: exams = [], isLoading, refetch } = useQuery({
+  const {
+    data: exams = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["exams"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/exams");
+      const response = await axiosInstance.get("/api/exams/");
       return response.data as Exam[];
     },
+    refetchOnWindowFocus: false,
+    initialData: [],
   });
 
   const { data: examStats } = useQuery({
     queryKey: ["examStats"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/exams/stats");
+      const response = await axiosInstance.get("/api/exams/stats");
       return response.data;
     },
   });
@@ -36,7 +42,9 @@ const ExamsPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Exam Management</h1>
-          <p className="text-gray-500 mt-1">Create, manage, and analyze exams</p>
+          <p className="text-gray-500 mt-1">
+            Create, manage, and analyze exams
+          </p>
         </div>
         <div className="flex items-center gap-3 mt-4 sm:mt-0">
           <button
@@ -65,11 +73,13 @@ const ExamsPage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Exams</p>
-              <p className="text-2xl font-bold text-gray-900">{examStats?.totalExams || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {examStats?.totalExams || 0}
+              </p>
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-6 rounded-xl shadow-sm">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -77,7 +87,9 @@ const ExamsPage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Completed</p>
-              <p className="text-2xl font-bold text-gray-900">{examStats?.completedExams || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {examStats?.COMPLETED || 0}
+              </p>
             </div>
           </div>
         </div>
@@ -89,7 +101,9 @@ const ExamsPage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Scheduled</p>
-              <p className="text-2xl font-bold text-gray-900">{examStats?.scheduledExams || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {examStats?.SCHEDULED || 0}
+              </p>
             </div>
           </div>
         </div>
@@ -101,7 +115,9 @@ const ExamsPage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Avg. Score</p>
-              <p className="text-2xl font-bold text-gray-900">{examStats?.averageScore || 0}%</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {examStats?.averageScore || 0}%
+              </p>
             </div>
           </div>
         </div>
@@ -111,9 +127,9 @@ const ExamsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Exam List */}
         <div className="lg:col-span-2">
-          <ExamList 
-            exams={exams} 
-            isLoading={isLoading} 
+          <ExamList
+            exams={exams}
+            isLoading={isLoading}
             onExamSelect={setSelectedExamId}
             onRefresh={refetch}
           />

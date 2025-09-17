@@ -6,7 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { NavItem as NavItemType, Teacher } from "../types/types";
 import { usePathname } from "next/navigation";
-import { accountNavItems, mainNavItems } from "../lib/navigationRoutes";
+import {
+  accountNavItems,
+  mainNavItems,
+  allNavItems,
+} from "../lib/navigationRoutes";
 
 // Define prop types
 interface SidebarProps {
@@ -82,6 +86,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     isDark ? "bg-blue-800 text-white" : "bg-white text-gray-800"
   } ${collapsed ? "w-20" : "w-72"} shadow-lg`;
 
+  console.log("Current User in Sidebar:", currentUser);
+
   return (
     <div className={containerClasses}>
       {/* Top section */}
@@ -131,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Main Navigation */}
         <nav className="space-y-2">
-          {mainNavItems.map(
+          {allNavItems.map(
             (item) =>
               (currentUser?.role === item?.role ||
                 currentUser?.roles === item?.role) && (
@@ -156,7 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </p>
         )}
 
-        <nav className="space-y-2">
+        {/* <nav className="space-y-2">
           {accountNavItems.map(
             (item) =>
               (currentUser?.role === item?.role ||
@@ -170,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 />
               )
           )}
-        </nav>
+        </nav> */}
       </div>
 
       {/* Bottom User Profile */}

@@ -2,6 +2,9 @@
 import React, { useState } from "react";
 import { useRive, useStateMachineInput } from "@rive-app/react-canvas";
 import Image from "next/image";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { loginUser } from "@/app/lib/api/api";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -9,6 +12,8 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const router = useRouter();
 
   // Rive animation setup
   const STATE_MACHINE_NAME = "Chump State Machine"; // Ensure this matches your Rive file's state machine name
@@ -44,7 +49,7 @@ function Login() {
   const handleUsernameBlur = () => {
     if (lookInput) {
       lookInput.value = 0; // Reset cursor position when input loses focus
-    };
+    }
     if (checkInput) checkInput.value = false;
     if (!password && handsUpInput) handsUpInput.value = false;
   };
@@ -57,7 +62,7 @@ function Login() {
     if (handsUpInput) handsUpInput.value = false;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -76,12 +81,44 @@ function Login() {
 
     // Simulate login
     setIsLoading(true);
-    if (successInput) successInput.fire();
+    //perform login here using react query and axios and store the token to use as bearer token for future requests
+    try {
+      const response = await loginUser(username, password);
+      const { access_token, refresh_token } = response;
+      // const response = await axios.post(`${process.env.API_URL}/auth/login`, {
+      //   username,
+      //   password,
+      // });
+      // const { access_token, refresh_token } = response.data;
 
-    setTimeout(() => {
+      // //decode the token to get user details
+      // const user = JSON.parse(atob(access_token.split(".")[1]));
+      // console.log(user);
+
+      // Store the token for future requests
+      localStorage.setItem("token", access_token);
+      localStorage.setItem("refresh_token", refresh_token);
+      // // Optionally, set up axios to use this token as a default header
+      // axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      // (await cookies()).set("auth_token", access_token, {
+      //   httpOnly: true, // JS cannot read
+      //   secure: true, // only over HTTPS
+      //   sameSite: "lax",
+      //   path: "/",
+      // });
+
+      // Fire success animation
+      if (successInput) successInput.fire();
+
       setIsLoading(false);
-      alert(`Welcome back, ${username}!`);
-    }, 2000);
+      // Redirect to dashboard or another page
+      router.push("/");
+    } catch (err) {
+      console.log(err);
+      setError("Invalid username or password");
+      if (failInput) failInput.fire();
+      setIsLoading(false);
+    }
   };
 
   return (

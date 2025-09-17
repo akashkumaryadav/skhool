@@ -11,18 +11,19 @@ import {
   Cog6ToothIcon,
   PencilIcon,
 } from "../../constants";
-import { User } from "../../types/types";
+import { Student } from "../../types/types";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Mock student data since AuthContext is removed
-const mockStudentUser: User = {
-  firstname: "Demo Student",
-  profilePic: "https://picsum.photos/seed/demostudent/100/100",
-  role: "Student",
-};
-const mockStudentEmail = "student.demo@skhool.co.in";
-const mockStudentClass = "7th";
-const mockStudentSection = "B";
+// const mockStudentUser: User = {
+//   firstname: "Demo Student",
+//   profilePic: "https://picsum.photos/seed/demostudent/100/100",
+//   role: "Student",
+// };
+// const mockStudentEmail = "student.demo@skhool.co.in";
+// const mockStudentClass = "7th";
+// const mockStudentSection = "B";
 
 interface ToggleSwitchProps {
   id: string;
@@ -77,6 +78,9 @@ const StudentSettingsPage = (): React.ReactNode => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
+  const queryClient = useQueryClient();
+  const currentUser = queryClient.getQueryData<Student>(["currentUser"]);
+
   return (
     <div className="space-y-8 max-w-2xl mx-auto pb-12">
       <div className="text-center md:text-left">
@@ -102,20 +106,22 @@ const StudentSettingsPage = (): React.ReactNode => {
             width={64}
             height={64}
             src={
-              mockStudentUser.profilePic ||
+              currentUser.profilePic ||
               "https://picsum.photos/seed/default-avatar/100/100"
             }
-            alt={`${mockStudentUser.firstname}'s avatar`}
+            alt={`${currentUser.firstname}'s avatar`}
             className="w-16 h-16 rounded-full object-cover shadow-md"
           />
           <div>
             <h3 className="text-xl font-semibold text-gray-800">
-              {mockStudentUser.firstname}
+              {currentUser.firstname} {currentUser.lastname}
             </h3>
-            <p className="text-sm text-gray-600">{mockStudentEmail}</p>
+            <p className="text-sm text-gray-600">
+              {currentUser.organizationEmail}
+            </p>
             <p className="text-xs text-skhool-orange-500 font-medium mt-0.5">
-              Role: {mockStudentUser.role} | Class: {mockStudentClass}-
-              {mockStudentSection}
+              Role: {currentUser.role} | Class: {currentUser.className}-
+              {currentUser.section}
             </p>
           </div>
         </div>

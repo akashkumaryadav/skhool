@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { AttendanceStatus } from "../../types/types"; // Adjust the import path as needed
+import { AttendanceStatus, Student } from "../../types/types"; // Adjust the import path as needed
 import {
   CalendarDaysIcon,
   CheckCircleIcon,
@@ -10,37 +10,37 @@ import {
   ClockIcon,
 } from "../../constants";
 import DashboardCard from "../../components/DashboardCard";
-import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Mock attendance data for a student (e.g., for 's1' - Aarav Sharma)
 // This will be displayed for any user accessing this page since auth is removed.
-const mockStudentAttendanceRecord: {
-  date: string;
-  status: AttendanceStatus;
-}[] = [
-  { date: "2023-11-01", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-02", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-03", status: AttendanceStatus.ABSENT },
-  { date: "2023-11-04", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-05", status: AttendanceStatus.LATE },
-  { date: "2023-11-06", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-07", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-08", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-09", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-10", status: AttendanceStatus.ABSENT },
-  { date: "2023-11-11", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-12", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-13", status: AttendanceStatus.PRESENT },
-  { date: "2023-11-14", status: AttendanceStatus.LATE },
-  { date: "2023-11-15", status: AttendanceStatus.PRESENT },
-  // Add more data for a month or so
-  { date: "2023-10-15", status: AttendanceStatus.PRESENT },
-  { date: "2023-10-16", status: AttendanceStatus.PRESENT },
-  { date: "2023-10-17", status: AttendanceStatus.PRESENT },
-  { date: "2023-10-18", status: AttendanceStatus.PRESENT },
-  { date: "2023-10-19", status: AttendanceStatus.ABSENT },
-  { date: "2023-10-20", status: AttendanceStatus.PRESENT },
-];
+// const mockStudentAttendanceRecord: {
+//   date: string;
+//   status: AttendanceStatus;
+// }[] = [
+//   { date: "2023-11-01", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-02", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-03", status: AttendanceStatus.ABSENT },
+//   { date: "2023-11-04", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-05", status: AttendanceStatus.LATE },
+//   { date: "2023-11-06", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-07", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-08", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-09", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-10", status: AttendanceStatus.ABSENT },
+//   { date: "2023-11-11", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-12", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-13", status: AttendanceStatus.PRESENT },
+//   { date: "2023-11-14", status: AttendanceStatus.LATE },
+//   { date: "2023-11-15", status: AttendanceStatus.PRESENT },
+//   // Add more data for a month or so
+//   { date: "2023-10-15", status: AttendanceStatus.PRESENT },
+//   { date: "2023-10-16", status: AttendanceStatus.PRESENT },
+//   { date: "2023-10-17", status: AttendanceStatus.PRESENT },
+//   { date: "2023-10-18", status: AttendanceStatus.PRESENT },
+//   { date: "2023-10-19", status: AttendanceStatus.ABSENT },
+//   { date: "2023-10-20", status: AttendanceStatus.PRESENT },
+// ];
 
 const getStatusIconAndColor = (status: AttendanceStatus) => {
   switch (status) {
@@ -74,10 +74,17 @@ const getStatusIconAndColor = (status: AttendanceStatus) => {
 const StudentAttendancePage: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // 0-indexed
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
- 
+
+  const queryClient = useQueryClient();
+  const currentUser = queryClient.getQueryData<Student>(["currentUser"]);
+  const { trend } = queryClient.getQueryData([
+    "studentAttendance",
+    currentUser?.id,
+  ]);
+
   const displayedAttendance = useMemo(() => {
-    return mockStudentAttendanceRecord
-      .filter((record) => {
+    return trend
+      ?.filter((record) => {
         const recordDate = new Date(record.date);
         return (
           recordDate.getFullYear() === currentYear &&

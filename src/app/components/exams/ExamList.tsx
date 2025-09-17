@@ -1,6 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { Calendar, Clock, Users, MoreVertical, Edit, Trash2, Eye } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Users,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Exam, ExamStatus, ExamType } from "../../types/types";
@@ -105,7 +113,7 @@ export const ExamList: React.FC<ExamListProps> = ({
     return (
       exam.name.toLowerCase().includes(searchLower) ||
       exam.subject.toLowerCase().includes(searchLower) ||
-      exam.className.toLowerCase().includes(searchLower) ||
+      exam.classId.toLowerCase().includes(searchLower) ||
       exam.section.toLowerCase().includes(searchLower) ||
       exam.status.toLowerCase().includes(searchLower) ||
       exam.examType.toLowerCase().includes(searchLower)
@@ -128,7 +136,11 @@ export const ExamList: React.FC<ExamListProps> = ({
       accessorKey: "examType",
       header: "Type",
       cell: (exam) => (
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(exam.examType)}`}>
+        <span
+          className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(
+            exam.examType
+          )}`}
+        >
           {exam.examType}
         </span>
       ),
@@ -139,7 +151,11 @@ export const ExamList: React.FC<ExamListProps> = ({
       accessorKey: "status",
       header: "Status",
       cell: (exam) => (
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(exam.status)}`}>
+        <span
+          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+            exam.status
+          )}`}
+        >
           {exam.status}
         </span>
       ),
@@ -147,12 +163,14 @@ export const ExamList: React.FC<ExamListProps> = ({
       filterOptions: Object.values(ExamStatus),
     },
     {
-      accessorKey: "className",
+      accessorKey: "classId",
       header: "Class",
       cell: (exam) => (
         <div className="flex items-center gap-1">
           <Users className="w-4 h-4 text-gray-400" />
-          <span>{exam.className} {exam.section}</span>
+          <span>
+            {exam.classId} {exam.section}
+          </span>
         </div>
       ),
     },
@@ -167,25 +185,35 @@ export const ExamList: React.FC<ExamListProps> = ({
       ),
     },
     {
-      accessorKey: "duration",
-      header: "Duration",
+      accessorKey: "endDate",
+      header: "End Date",
       cell: (exam) => (
         <div className="flex items-center gap-1">
-          <Clock className="w-4 h-4 text-gray-400" />
-          <span>{exam.duration} mins</span>
+          <Calendar className="w-4 h-4 text-gray-400" />
+          <span>{moment(exam.endDate).format("MMM DD, YYYY")}</span>
         </div>
       ),
     },
-    {
-      accessorKey: "totalMarks",
-      header: "Marks",
-      cell: (exam) => (
-        <div className="text-sm">
-          <div>Total: {exam.totalMarks}</div>
-          <div className="text-gray-500">Pass: {exam.passingMarks}</div>
-        </div>
-      ),
-    },
+    // {
+    //   accessorKey: "duration",
+    //   header: "Duration",
+    //   cell: (exam) => (
+    //     <div className="flex items-center gap-1">
+    //       <Clock className="w-4 h-4 text-gray-400" />
+    //       <span>{exam.duration} mins</span>
+    //     </div>
+    //   ),
+    // },
+    // {
+    //   accessorKey: "totalMarks",
+    //   header: "Marks",
+    //   cell: (exam) => (
+    //     <div className="text-sm">
+    //       <div>Total: {exam.totalMarks}</div>
+    //       <div className="text-gray-500">Pass: {exam.passingMarks}</div>
+    //     </div>
+    //   ),
+    // },
     {
       accessorKey: "id" as keyof Exam,
       header: "Actions",
@@ -240,7 +268,9 @@ export const ExamList: React.FC<ExamListProps> = ({
           <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <Calendar className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No exams yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No exams yet
+          </h3>
           <p className="text-gray-500">Create your first exam to get started</p>
         </div>
       </div>
@@ -258,7 +288,6 @@ export const ExamList: React.FC<ExamListProps> = ({
         totalCount={filteredExams.length}
       />
 
-      
       {/* Edit Modal */}
       <CreateExamModal
         open={editModalOpen}
@@ -279,9 +308,12 @@ export const ExamList: React.FC<ExamListProps> = ({
       {deleteConfirmOpen && examToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Exam</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Delete Exam
+            </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{examToDelete.name}"? This action cannot be undone.
+              Are you sure you want to delete "{examToDelete.name}"? This action
+              cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3">
               <button

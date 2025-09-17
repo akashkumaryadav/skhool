@@ -2,20 +2,20 @@
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  Upload, 
-  BarChart3, 
-  FileText, 
-  Calendar, 
-  Clock, 
-  Users, 
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Upload,
+  BarChart3,
+  FileText,
+  Calendar,
+  Clock,
+  Users,
   Target,
   BookOpen,
   Settings,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import axiosInstance from "../../../lib/axiosInstance";
@@ -35,18 +35,23 @@ const ExamDetailPage: React.FC = () => {
   const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
   const [reportGeneratorOpen, setReportGeneratorOpen] = useState(false);
 
-  const { data: exam, isLoading, refetch } = useQuery({
+  const {
+    data: exam,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["exam", examId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/exams/${examId}`);
+      const response = await axiosInstance.get(`/api/exams/${examId}`);
       return response.data as Exam;
     },
+    staleTime: 60 * 60 * 1000,
   });
 
   const { data: examStats } = useQuery({
     queryKey: ["examStats", examId],
     queryFn: async () => {
-      const response = await axiosInstance.get(`/exams/${examId}/stats`);
+      const response = await axiosInstance.get(`/api/exams/${examId}/stats`);
       return response.data;
     },
     enabled: !!exam,
@@ -54,7 +59,7 @@ const ExamDetailPage: React.FC = () => {
 
   const deleteExamMutation = useMutation({
     mutationFn: async () => {
-      const response = await axiosInstance.delete(`/exams/${examId}`);
+      const response = await axiosInstance.delete(`/api/exams/${examId}`);
       return response.data;
     },
     onSuccess: () => {
@@ -119,7 +124,10 @@ const ExamDetailPage: React.FC = () => {
     return (
       <div className="p-6 text-center">
         <h2 className="text-xl font-semibold text-gray-800">Exam not found</h2>
-        <Link href="/admin/exams" className="text-indigo-600 hover:text-indigo-700 mt-2 inline-block">
+        <Link
+          href="/admin/exams"
+          className="text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
+        >
           Back to Exams
         </Link>
       </div>
@@ -144,7 +152,7 @@ const ExamDetailPage: React.FC = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <button
             onClick={() => setEditModalOpen(true)}
@@ -168,10 +176,18 @@ const ExamDetailPage: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Exam Details</h2>
           <div className="flex items-center gap-2">
-            <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(exam.status)}`}>
+            <span
+              className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
+                exam.status
+              )}`}
+            >
               {exam.status}
             </span>
-            <span className={`px-3 py-1 text-sm font-medium rounded-full ${getTypeColor(exam.examType)}`}>
+            <span
+              className={`px-3 py-1 text-sm font-medium rounded-full ${getTypeColor(
+                exam.examType
+              )}`}
+            >
               {exam.examType}
             </span>
           </div>
@@ -196,7 +212,9 @@ const ExamDetailPage: React.FC = () => {
             </div>
             <div>
               <p className="text-sm text-gray-500">Duration</p>
-              <p className="font-medium text-gray-900">{exam.duration} minutes</p>
+              <p className="font-medium text-gray-900">
+                {exam.duration} minutes
+              </p>
             </div>
           </div>
 
@@ -223,7 +241,9 @@ const ExamDetailPage: React.FC = () => {
 
         {exam.description && (
           <div className="mt-6 pt-6 border-t border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Description</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-2">
+              Description
+            </h3>
             <p className="text-gray-600">{exam.description}</p>
           </div>
         )}
@@ -238,20 +258,28 @@ const ExamDetailPage: React.FC = () => {
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Students Appeared</p>
-                <p className="text-2xl font-bold text-gray-900">{examStats.studentsAppeared || 0}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Students Appeared
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {examStats.studentsAppeared || 0}
+                </p>
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-xl shadow-sm">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
                 <BarChart3 className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Average Score</p>
-                <p className="text-2xl font-bold text-gray-900">{examStats.averageMarks?.toFixed(1) || 0}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Average Score
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {examStats.averageMarks?.toFixed(1) || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -263,7 +291,9 @@ const ExamDetailPage: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-500">Pass Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{examStats.passPercentage?.toFixed(1) || 0}%</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {examStats.passPercentage?.toFixed(1) || 0}%
+                </p>
               </div>
             </div>
           </div>
@@ -274,8 +304,12 @@ const ExamDetailPage: React.FC = () => {
                 <FileText className="w-6 h-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Highest Score</p>
-                <p className="text-2xl font-bold text-gray-900">{examStats.highestMarks || 0}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  Highest Score
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {examStats.highestMarks || 0}
+                </p>
               </div>
             </div>
           </div>
@@ -284,7 +318,9 @@ const ExamDetailPage: React.FC = () => {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Quick Actions
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href={`/admin/exams/${examId}/marks`}
@@ -295,7 +331,9 @@ const ExamDetailPage: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900">Upload Marks</p>
-              <p className="text-sm text-gray-500">Add or update student marks</p>
+              <p className="text-sm text-gray-500">
+                Add or update student marks
+              </p>
             </div>
           </Link>
 
@@ -307,8 +345,12 @@ const ExamDetailPage: React.FC = () => {
               <UserCheck className="w-5 h-5 text-green-600" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">Generate Student Reports</p>
-              <p className="text-sm text-gray-500">Create individual student reports</p>
+              <p className="font-medium text-gray-900">
+                Generate Student Reports
+              </p>
+              <p className="text-sm text-gray-500">
+                Create individual student reports
+              </p>
             </div>
           </button>
 
@@ -321,7 +363,9 @@ const ExamDetailPage: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900">Manage Templates</p>
-              <p className="text-sm text-gray-500">Create and edit report templates</p>
+              <p className="text-sm text-gray-500">
+                Create and edit report templates
+              </p>
             </div>
           </button>
 
@@ -334,7 +378,9 @@ const ExamDetailPage: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900">View Analytics</p>
-              <p className="text-sm text-gray-500">Detailed performance insights</p>
+              <p className="text-sm text-gray-500">
+                Detailed performance insights
+              </p>
             </div>
           </Link>
         </div>
@@ -356,9 +402,12 @@ const ExamDetailPage: React.FC = () => {
       {deleteConfirmOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Exam</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Delete Exam
+            </h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{exam.name}"? This action cannot be undone.
+              Are you sure you want to delete "{exam.name}"? This action cannot
+              be undone.
             </p>
             <div className="flex items-center justify-end gap-3">
               <button
