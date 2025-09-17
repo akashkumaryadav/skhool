@@ -1,220 +1,422 @@
+// app/ai-helper/page.tsx
 "use client";
 
-import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { Bot, Send, Sparkles, BookOpen, Target, TrendingUp } from 'lucide-react';
-import axiosInstance from '@/lib/axiosInstance';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ArrowPathIcon,
+  LightBulbIcon,
+  PaperAirplaneIcon,
+  SparklesIcon,
+  UserCircleIcon,
+} from "@/app/components/icons";
+import axiosInstance from "@/app/lib/axiosInstance";
+import { ChatMessage, Teacher } from "@/app/types/types";
+import { Chat, GoogleGenAI } from "@google/genai";
+import { useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
 
-type Message = {
-  id: string;
-  content: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
-};
+const AIHelperPage: React.FC = () => {
+  const [inputValue, setInputValue] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatSession, setChatSession] = useState<Chat | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-const AITutorPage = () => {
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  console.log(process.env);
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData<Teacher>(["currentUser"])?.id;
 
-  const { data: analysis } = useQuery({
-    queryKey: ['aiAnalysis'],
-    queryFn: async () => {
-      const response = await axiosInstance.get('/api/ai/analysis');
-      return response.data;
-    },
-  });
-
-  const sendMessage = useMutation({
-    mutationFn: async (content: string) => {
-      // In a real app, this would call your AI API
-      return new Promise<{ response: string }>((resolve) => {
-        setTimeout(() => {
-          resolve({
-            response: `I've analyzed your performance. You're doing well in Math but could use some help with Science. Here are some resources that might help...`
-          });
-        }, 1000);
+  // Initialize Gemini AI and Chat Session
+  useEffect(() => {
+    try {
+      if (!process.env.NEXT_PUBLIC_GOOGLE_STUDIO_API_KEY) {
+        console.error("API_KEY is not set in environment variables.");
+        addMessageToChat(
+          "API Key for Gemini is not configured. Please contact support.",
+          "system",
+          true
+        );
+        return;
+      }
+      const ai = new GoogleGenAI({
+        apiKey: process.env.NEXT_PUBLIC_GOOGLE_STUDIO_API_KEY,
       });
-    },
-    onSuccess: (data, content) => {
-      setMessages(prev => [
-        ...prev,
-        { id: Date.now().toString(), content, sender: 'user', timestamp: new Date() },
-        { id: (Date.now() + 1).toString(), content: data.response, sender: 'ai', timestamp: new Date() }
-      ]);
-      setMessage('');
-    },
-  });
+      const newChatSession = ai.chats.create({
+        model: "gemini-2.0-flash-thinking-exp-01-21",
+        config: {
+          systemInstruction:
+            "You are Skhool AI, a helpful assistant for teachers. Provide concise, practical, and creative support for educational tasks. Be friendly and encouraging. If asked for JSON, ensure the output is pure JSON without markdown.",
+        },
+      });
+      setChatSession(newChatSession);
+      addMessageToChat(
+        "Hello! I'm Skhool AI. How can I help you today? Feel free to ask me anything or use one of the quick prompts below.",
+        "ai"
+      );
+    } catch (error) {
+      console.error("Error initializing AI Helper:", error);
+      addMessageToChat(
+        "Sorry, I couldn't initialize properly. There might be an issue with the AI service configuration.",
+        "system",
+        true
+      );
+    }
+  }, []);
 
-  const analyzePerformance = () => {
-    setIsAnalyzing(true);
-    // Simulate analysis
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        { 
-          id: Date.now().toString(), 
-          content: "I've analyzed your performance across all subjects. Here's what I found...",
-          sender: 'ai',
-          timestamp: new Date() 
-        }
-      ]);
-      setIsAnalyzing(false);
-    }, 2000);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(scrollToBottom, [chatMessages]);
+
+  const addMessageToChat = (
+    text: string,
+    sender: ChatMessage["sender"],
+    isError: boolean = false,
+    isLoadingFlag: boolean = false
+  ) => {
+    const newMessage: ChatMessage = {
+      id: Date.now().toString() + sender,
+      text,
+      sender,
+      timestamp: new Date(),
+      error: isError ? text : undefined,
+      isLoading: isLoadingFlag,
+    };
+    setChatMessages((prev) => [...prev, newMessage]);
+  };
+
+  // const updateLastAiMessage = (textChunk: string, isFinalChunk: boolean) => {
+  //   setChatMessages((prevMessages) => {
+  //     const lastMessage = prevMessages[prevMessages.length - 1];
+  //     if (lastMessage && lastMessage.sender === "ai" && lastMessage.isLoading) {
+  //       const updatedMessage: ChatMessage = {
+  //         ...lastMessage,
+  //         text:
+  //           (lastMessage.text === "Thinking..." ? "" : lastMessage.text) +
+  //           textChunk,
+  //         isLoading: !isFinalChunk, // Set isLoading to false only on the final chunk
+  //       };
+  //       return [...prevMessages.slice(0, -1), updatedMessage];
+  //     }
+  //     // This case should ideally not be hit if addMessageToChat with isLoadingFlag was called correctly
+  //     return [
+  //       ...prevMessages,
+  //       {
+  //         id: Date.now().toString() + "ai_stream",
+  //         text: textChunk,
+  //         sender: "ai",
+  //         timestamp: new Date(),
+  //         isLoading: !isFinalChunk,
+  //       },
+  //     ];
+  //   });
+  // };
+
+  // const handleSendMessage = async (messageText?: string) => {
+  //   const textToSend = messageText || inputValue.trim();
+  //   if (!textToSend || !chatSession) return;
+
+  //   addMessageToChat(textToSend, "user");
+  //   if (!messageText) setInputValue("");
+  //   setIsLoading(true);
+
+  //   // Add a placeholder for AI's response
+  //   addMessageToChat("Thinking...", "ai", false, true);
+
+  //   try {
+  //     const stream = await chatSession.sendMessageStream({
+  //       message: textToSend,
+  //     });
+  //     let fullResponse = "";
+  //     for await (const chunk of stream) {
+  //       const chunkText = chunk.text; // Access text directly
+  //       if (chunkText) {
+  //         fullResponse += chunkText;
+  //         updateLastAiMessage(chunkText, false); // Update incrementally
+  //       }
+  //     }
+  //     // Final update to mark loading as complete
+  //     updateLastAiMessage("", true);
+  //   } catch (error: any) {
+  //     console.error("Error sending message to Gemini:", error);
+  //     const errorMessage =
+  //       error.message || "Sorry, I encountered an error. Please try again.";
+  //     setChatMessages((prev) =>
+  //       prev.map((msg) =>
+  //         msg.isLoading && msg.sender === "ai"
+  //           ? {
+  //               ...msg,
+  //               text: errorMessage,
+  //               error: errorMessage,
+  //               isLoading: false,
+  //             }
+  //           : msg
+  //       )
+  //     );
+  //   } finally {
+  //     setIsLoading(false);
+  //     inputRef.current?.focus();
+  //   }
+  // };
+
+  const handleSendMessageNew = (messageText?: string) => {
+    const textToSend = messageText || inputValue.trim();
+    if (!textToSend || !chatSession) return;
+    addMessageToChat(textToSend, "user");
+    if (!messageText) setInputValue("");
+    setIsLoading(true);
+    // Add a placeholder for AI's response
+    addMessageToChat("Thinking...", "ai", false, true);
+    axiosInstance
+      .post(process.env.CHAT_URL, {
+        message: textToSend,
+        user_id: user.toString(),
+      })
+      .then((response) => {
+        const aiResponse =
+          response.data.answer.output || "Sorry, I didn't get that.";
+        setChatMessages((prev) =>
+          prev.map((msg) =>
+            msg.isLoading && msg.sender === "ai"
+              ? {
+                  ...msg,
+                  text: aiResponse,
+                  isLoading: false,
+                }
+              : msg
+          )
+        );
+      })
+      .catch((error) => {
+        console.error("Error sending message to Gemini:", error);
+        const errorMessage =
+          error.message || "Sorry, I encountered an error. Please try again.";
+        setChatMessages((prev) =>
+          prev.map((msg) =>
+            msg.isLoading && msg.sender === "ai"
+              ? {
+                  ...msg,
+                  text: errorMessage,
+                  error: errorMessage,
+                  isLoading: false,
+                }
+              : msg
+          )
+        );
+      })
+      .finally(() => {
+        setIsLoading(false);
+        inputRef.current?.focus();
+      });
+  };
+
+  const predefinedPrompts: {
+    title: string;
+    prompt: string;
+    icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  }[] = [
+    {
+      title:"What is photosynthesys",
+      prompt:"what is photosynthesys",
+      icon:LightBulbIcon
+    }
+  ];
+
+  const handlePredefinedPrompt = (prompt: string) => {
+    setInputValue(prompt); // Pre-fill input for user to send
+    inputRef.current?.focus();
+    // Or, send directly:
+    // handleSendMessage(prompt);
+  };
+
+  const handlePdfDownload = (msg) => {
+    console.log("Handling PDF download for message:", msg);
+    try {
+      const jsonString = msg.text.substring(
+        msg.text.indexOf("{"),
+        msg.text.lastIndexOf("}") + 1
+      );
+      const parsed = JSON.parse(jsonString);
+      if (parsed.pdf && parsed.fileName) {
+        const pdfData = parsed.pdf;
+        const fileName = parsed.fileName;
+        const link = document.createElement("a");
+        link.href = `data:application/pdf;base64,${pdfData}`;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Bot className="w-8 h-8 text-indigo-600" />
-        <h1 className="text-2xl font-bold text-gray-800">AI Learning Assistant</h1>
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)] bg-gray-50">
+      {" "}
+      {/* Adjusted height for header */}
+      <div className="p-4 border-b border-gray-200 bg-white">
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center">
+          <SparklesIcon className="w-7 h-7 text-purple-600 mr-2" />
+          AI Helper
+        </h1>
+        <p className="text-sm text-gray-500">
+          Your intelligent assistant for teaching tasks.
+        </p>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Chat with your AI Tutor</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96 overflow-y-auto mb-4 space-y-4 pr-2">
-                {messages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center p-8 text-gray-500">
-                    <Bot className="w-12 h-12 mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium mb-2">How can I help you today?</h3>
-                    <p className="text-sm max-w-md">Ask me about your performance, request study tips, or get help with specific subjects.</p>
-                  </div>
-                ) : (
-                  messages.map(msg => (
-                    <div 
-                      key={msg.id} 
-                      className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div 
-                        className={`max-w-[80%] p-3 rounded-lg ${
-                          msg.sender === 'user' 
-                            ? 'bg-indigo-600 text-white rounded-br-none' 
-                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                        }`}
-                      >
-                        {msg.content}
-                      </div>
-                    </div>
-                  ))
-                )}
-                {isAnalyzing && (
-                  <div className="flex justify-start">
-                    <div className="bg-gray-100 p-3 rounded-lg rounded-bl-none">
-                      <div className="flex space-x-2">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex gap-2">
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask me anything about your learning..."
-                  className="min-h-[40px] resize-none"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (message.trim()) {
-                        sendMessage.mutate(message);
-                      }
-                    }
-                  }}
-                />
-                <Button 
-                  size="icon" 
-                  disabled={!message.trim() || sendMessage.isPending}
-                  onClick={() => message.trim() && sendMessage.mutate(message)}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Predefined Prompts Section */}
+      <div className="p-4 bg-white border-b border-gray-200">
+        <h2 className="text-sm font-semibold text-gray-700 mb-2">
+          Quick Starters:
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {predefinedPrompts.map((p) => (
+            <button
+              key={p.title}
+              onClick={() => handlePredefinedPrompt(p.prompt)}
+              disabled={isLoading}
+              className="flex flex-col items-center justify-center text-center p-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg shadow-sm hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
+              title={p.prompt}
+            >
+              <p.icon className="w-5 h-5 mb-1 text-purple-600" />
+              <span className="text-xs font-medium">{p.title}</span>
+            </button>
+          ))}
         </div>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
-                Quick Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start gap-2"
-                onClick={analyzePerformance}
-                disabled={isAnalyzing}
-              >
-                <TrendingUp className="w-4 h-4" />
-                Analyze My Performance
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <BookOpen className="w-4 h-4" />
-                Suggest Study Plan
-              </Button>
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Target className="w-4 h-4" />
-                Set Learning Goals
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Performance Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {analysis ? (
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium">Strengths</h4>
-                    <div className="mt-1 space-y-1">
-                      {analysis.strengths.map((s: string, i: number) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                          <span className="text-sm">{s}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-medium">Areas to Improve</h4>
-                    <div className="mt-1 space-y-1">
-                      {analysis.areasToImprove.map((a: string, i: number) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full" />
-                          <span className="text-sm">{a}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+      </div>
+      {/* Chat Messages Area */}
+      <div
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100"
+        tabIndex={0}
+        aria-live="polite"
+      >
+        {chatMessages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex ${
+              msg.sender === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            {msg.sender === "ai" && (
+              <SparklesIcon className="w-6 h-6 text-purple-500 mr-2 flex-shrink-0 self-start mt-1" />
+            )}
+            <div
+              className={`max-w-xl px-4 py-2.5 rounded-xl shadow-md ${
+                msg.sender === "user"
+                  ? "bg-primary text-white rounded-br-none"
+                  : msg.sender === "ai"
+                  ? `bg-white text-gray-800 rounded-bl-none border border-gray-200 ${
+                      msg.error ? "border-red-300 bg-red-50" : ""
+                    }`
+                  : "bg-yellow-100 text-yellow-800 border border-yellow-300 text-sm italic text-center w-full max-w-full" // System messages
+              }`}
+            >
+              {msg.isLoading && msg.sender === "ai" ? (
+                <div className="flex items-center">
+                  <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin text-purple-500" />
+                  <span className="text-sm text-gray-600">
+                    <Markdown>{msg.text}</Markdown>
+                  </span>
                 </div>
+              ) : msg.error ? (
+                <p className="text-sm text-red-700">
+                  <strong className="font-semibold">Error:</strong>{" "}
+                  <Markdown>{msg.text}</Markdown>
+                </p>
               ) : (
-                <div className="text-center py-4 text-gray-500">
-                  <p>Complete an assessment to see your performance analysis</p>
-                </div>
+                <p className="text-sm whitespace-pre-wrap">
+                  {msg.text.includes("{") &&
+                  msg.text.includes("}") &&
+                  msg.text.includes("fileName") ? (
+                    <button
+                      onClick={() => {
+                        handlePdfDownload(msg);
+                      }}
+                      className="mt-2 text-sm text-blue-600 hover:underline"
+                    >
+                      Download PDF
+                    </button>
+                  ) : (
+                    <Markdown>{msg.text}</Markdown>
+                  )}
+                </p>
               )}
-            </CardContent>
-          </Card>
-        </div>
+              <p
+                className={`text-xs mt-1.5 ${
+                  msg.sender === "user"
+                    ? "text-blue-200 text-right"
+                    : msg.sender === "ai" && !msg.error
+                    ? "text-gray-400 text-left"
+                    : "text-yellow-600 text-center"
+                }`}
+              >
+                {msg.timestamp.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+            {msg.sender === "user" && (
+              <UserCircleIcon className="w-6 h-6 text-skhool-blue-500 ml-2 flex-shrink-0 self-start mt-1" />
+            )}
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
       </div>
+      {/* Input Area */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          // handleSendMessage();
+          handleSendMessageNew();
+        }}
+        className="p-4 border-t border-gray-300 bg-white"
+        aria-label="AI Chat Input Form"
+      >
+        <div className="flex items-end space-x-2">
+          <textarea
+            ref={inputRef}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                // handleSendMessage();
+                handleSendMessageNew();
+              }
+            }}
+            placeholder="Type your message to Skhool AI..."
+            className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-shadow text-sm resize-none"
+            rows={Math.min(5, inputValue.split("\n").length)} // Basic auto-grow up to 5 rows
+            disabled={isLoading || !chatSession}
+            aria-label="Type your question for Skhool AI"
+            aria-multiline="true"
+          />
+          <button
+            type="submit"
+            className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors self-stretch flex items-center justify-center"
+            disabled={isLoading || !inputValue.trim() || !chatSession}
+            aria-label={isLoading ? "Sending..." : "Send message to AI"}
+          >
+            {isLoading ? (
+              <ArrowPathIcon className="w-5 h-5 animate-spin" />
+            ) : (
+              <PaperAirplaneIcon className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+        {!chatSession &&
+          !chatMessages.some((m) => m.sender === "system" && m.error) && (
+            <p className="text-xs text-red-500 text-center mt-2">
+              AI Helper is not available. API Key might be missing.
+            </p>
+          )}
+      </form>
     </div>
   );
 };
 
-export default AITutorPage;
+export default AIHelperPage;
