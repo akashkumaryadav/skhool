@@ -5,7 +5,7 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 
-const API_BASE_URL = "http://localhost:8080"; // Your API base URL
+const API_BASE_URL = process.env.API_URL; // Your API base URL
 
 export const fetchUser = async (userId: string) => {
   const response = await axios.get(`${API_BASE_URL}/user/1`, {

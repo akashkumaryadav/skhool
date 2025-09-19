@@ -29,8 +29,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true, // Ignore TypeScript errors during build
   },
   env: {
-    API_URL: process.env.API_URL || "http://localhost:8080", // Default to local API URL if not set
-    CHAT_URL: process.env.CHAT_URL || "http://localhost:8000/chat", // Default to local CHAT URL if not set
+    API_URL: process.env.API_URL, // Default to local API URL if not set
+    CHAT_URL: process.env.CHAT_URL, // Default to local CHAT URL if not set
   },
 };
 
