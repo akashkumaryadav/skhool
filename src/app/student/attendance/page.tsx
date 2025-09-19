@@ -80,7 +80,7 @@ const StudentAttendancePage: React.FC = () => {
   const { trend } = queryClient.getQueryData([
     "studentAttendance",
     currentUser?.id,
-  ]);
+  ]) as any;
 
   const displayedAttendance = useMemo(() => {
     return trend

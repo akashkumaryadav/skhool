@@ -123,7 +123,7 @@ const StudentGradesPage: React.FC = () => {
         <select
           id="filter-exam-type-student"
           value={selectedExamType || ""}
-          onChange={(e) => setSelectedExamType(e.target.value)}
+          onChange={(e) => setSelectedExamType(Number(e.target.value))}
           className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-skhool-blue-500 focus:border-skhool-blue-500 sm:text-sm"
         >
           {exams?.map((exam) => (

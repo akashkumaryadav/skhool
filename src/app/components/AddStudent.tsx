@@ -42,7 +42,7 @@ const AddStudent = ({ bulkUpload, open, onClose }) => {
       axiosInstance.post("/student/", student).then((res) => res.data),
     onSuccess: () => {
       // Invalidate or refetch relevant queries after a successful mutation
-      queryClient.invalidateQueries(["students"]);
+      queryClient.invalidateQueries(["students"] as unknown);
     },
   });
 
@@ -116,7 +116,7 @@ const AddStudent = ({ bulkUpload, open, onClose }) => {
       headers: { "Content-type": "Multipart/form-data" },
     });
     console.log(res.data);
-    queryClient.invalidateQueries(["students"]);
+    queryClient.invalidateQueries(["students"] as unknown);
     setFiles([]);
   };
 

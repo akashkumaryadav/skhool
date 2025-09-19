@@ -15,7 +15,9 @@
     "incremental": true,
     "noImplicitAny": false,
     "checkJs": false,
-    "noEmitOnError": false,
+    "noEmitOnError": true,
+    //diasable build failure on type error
+    
     "plugins": [
       {
         "name": "next"

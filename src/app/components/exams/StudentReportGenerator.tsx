@@ -553,7 +553,6 @@ export const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
           studentName: `${student.firstname} ${student.lastname}`,
           rollNo: student.rollNo || student.id,
           fatherName: student.guardian || "N/A",
-          motherName: student.motherName || "N/A",
           dateOfBirth: student.dateOfBirth
             ? new Date(student.dateOfBirth).toLocaleDateString()
             : "N/A",
@@ -561,9 +560,6 @@ export const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
           // Class Information
           className: exam.className || "N/A",
           section: classDetails?.section || "A",
-          classTeacher: classDetails?.classTeacher || "N/A",
-          academicYear:
-            classDetails?.academicYear || new Date().getFullYear().toString(),
 
           // Exam Information
           examName: exam.name || "Examination",
@@ -788,11 +784,11 @@ export const StudentReportGenerator: React.FC<StudentReportGeneratorProps> = ({
                       <p className="text-sm text-gray-500 mt-1">
                         {template.description}
                       </p>
-                      {template.isDefault && (
+                      {/* {template.isDefault && (
                         <span className="inline-block px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full mt-2">
                           Default
                         </span>
-                      )}
+                      )} */}
                     </div>
                     <FileText className="w-5 h-5 text-gray-400" />
                   </div>
