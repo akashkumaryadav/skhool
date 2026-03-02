@@ -88,10 +88,14 @@ export function middleware(req: NextRequest) {
 
   // Check if user is accessing the correct role-based route
   const expectedRoute = roleRoutes[currentRole as keyof typeof roleRoutes];
-  console.log("Expected route:", expectedRoute);
+  console.log("Expected route:", expectedRoute, pathname);
   if (!expectedRoute) {
     console.log("Unknown role, redirecting to landing page");
     return NextResponse.redirect(new URL("/", req.url));
+  }
+
+  if (pathname === "/auth/login") {
+    return NextResponse.redirect(new URL(expectedRoute, req.url));
   }
 
   // If user is accessing a role-based route that doesn't match their role

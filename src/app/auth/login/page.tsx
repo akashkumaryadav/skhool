@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import { useRive, useStateMachineInput } from "@rive-app/react-canvas";
 import Image from "next/image";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/app/lib/api/api";
+import axiosInstance from "@/app/lib/axiosInstance";
+import { useQueryClient } from "@tanstack/react-query";
 
 function Login() {
+  const queryClient = useQueryClient();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -98,6 +100,10 @@ function Login() {
       // Store the token for future requests
       localStorage.setItem("token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
+
+      //refresh a query key
+      await queryClient.invalidateQueries(["currentUser"]);
+
       // // Optionally, set up axios to use this token as a default header
       // axios.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
       // (await cookies()).set("auth_token", access_token, {
@@ -107,12 +113,9 @@ function Login() {
       //   path: "/",
       // });
 
-      // Fire success animation
-      if (successInput) successInput.fire();
-
       setIsLoading(false);
       // Redirect to dashboard or another page
-      router.push("/");
+      window.location.reload();
     } catch (err) {
       console.log(err);
       setError("Invalid username or password");

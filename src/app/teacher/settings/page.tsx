@@ -20,6 +20,7 @@ import EditProfileModal from "@/app/components/EditProfileModal";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "../../lib/axiosInstance"; // Adjust the path as necessary
 import Image from "next/image";
+import { logoutUser } from "@/app/lib/api/api";
 
 // Mock current user data (can be fetched from context or API in a real app)
 // const currentUser: User = {
@@ -188,6 +189,14 @@ const SettingsPage: React.FC = () => {
     // inavalidate the userData query to refetch the updated data
   };
 
+  const handleLogout = async () => {
+    //clear the local storage and react query cache and redirect to login page
+    localStorage.clear();
+    queryClient.clear();
+    //clear cookies if any
+    await logoutUser();
+  };
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto pb-12">
       <div className="text-center md:text-left">
@@ -353,7 +362,7 @@ const SettingsPage: React.FC = () => {
           icon={ArrowLeftOnRectangleIcon}
           title="Logout"
           description="Sign out of your Skhool account."
-          action={() => alert("Logout clicked!")} // In real app, this would trigger logout logic
+          action={handleLogout} // In real app, this would trigger logout logic
           actionLabel="Logout"
           actionIcon={ArrowLeftOnRectangleIcon}
         />

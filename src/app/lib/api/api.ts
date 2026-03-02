@@ -4,6 +4,7 @@
 
 import axios from "axios";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const API_BASE_URL = process.env.API_URL; // Your API base URL
 
@@ -28,6 +29,12 @@ export const loginUser = async (username: string, password: string) => {
     path: "/",
   });
   return response.data;
+};
+
+export const logoutUser = async () => {
+  console.log("Logging out user");
+  (await cookies()).delete("auth_token");
+  redirect("/");
 };
 
 export const handleRefreshToken = async (refreshToken: string) => {
